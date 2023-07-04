@@ -25,8 +25,11 @@ public:
 
 private:
     //==============================================================================
-    // Your private member variables go here...
+    const float HEIGHT_DEF = 600.0f;
+    const float WIDTH_DEF = 800.0f;
 
+    float height;
+    float width;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };

@@ -3,9 +3,7 @@
 //==============================================================================
 MainComponent::MainComponent()
 {
-    // Make sure you set the size of the component after
-    // you add any child components.
-    setSize (800, 600);
+    setSize (WIDTH_DEF, HEIGHT_DEF);
 }
 
 MainComponent::~MainComponent()
@@ -27,8 +25,8 @@ void MainComponent::shutdown()
 
 void MainComponent::render()
 {
-    // This clears the context with a black background.
-    juce::OpenGLHelpers::clear (juce::Colours::black);
+    // This clears the context with a white background.
+    juce::OpenGLHelpers::clear (juce::Colours::white);
 
     // Add your rendering code here...
 }
@@ -36,13 +34,12 @@ void MainComponent::render()
 //==============================================================================
 void MainComponent::paint (juce::Graphics& g)
 {
-    // You can add your component specific drawing code here!
-    // This will draw over the top of the openGL background.
+    g.setColour(juce::Colours::black);
+    g.fillRect(0.0f, height/2, width, 2.0f);
 }
 
 void MainComponent::resized()
 {
-    // This is called when the MainComponent is resized.
-    // If you add any child components, this is where you should
-    // update their positions.
+    width = getWidth();
+    height = getHeight();
 }
