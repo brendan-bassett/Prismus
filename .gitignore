@@ -1,3 +1,4 @@
 Archive/*
-Demos/*
-Builds/*
+!Archive/notes.txt
+Demos/
+Builds/
