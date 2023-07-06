@@ -5,9 +5,10 @@
   <MAINGROUP id="jhSk9f" name="Prismus">
     <GROUP id="{8FA4013B-D3C1-77A6-1407-006BCF154FB7}" name="Source">
       <FILE id="Jjtili" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="HS7AR4" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="Ps7j9k" name="MainComponent.cpp" compile="1" resource="0"
-            file="Source/MainComponent.cpp"/>
+      <FILE id="R60IrP" name="Score.cpp" compile="1" resource="0" file="Source/Score.cpp"/>
+      <FILE id="oYl82h" name="Score.h" compile="0" resource="0" file="Source/Score.h"/>
+      <FILE id="TCAF6S" name="TonicButton.cpp" compile="1" resource="0" file="Source/TonicButton.cpp"/>
+      <FILE id="CpqWxW" name="TonicButton.h" compile="0" resource="0" file="Source/TonicButton.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
