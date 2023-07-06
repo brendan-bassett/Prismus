@@ -7,7 +7,7 @@
 */
 
 #include <JuceHeader.h>
-#include "Score.h"
+#include "Lens.h"
 
 //==============================================================================
 class PrismusApplication  : public juce::JUCEApplication
@@ -65,7 +65,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new Score(), true);
+            setContentOwned (new Lens(), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
@@ -74,7 +74,7 @@ public:
             centreWithSize (getWidth(), getHeight());
            #endif
 
-            setVisible (true);
+            setVisible(true);
         }
 
         void closeButtonPressed() override

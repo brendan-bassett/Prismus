@@ -4,11 +4,11 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="jhSk9f" name="Prismus">
     <GROUP id="{8FA4013B-D3C1-77A6-1407-006BCF154FB7}" name="Source">
+      <FILE id="qSo3VF" name="Interval.cpp" compile="1" resource="0" file="Source/Interval.cpp"/>
+      <FILE id="aveQco" name="Interval.h" compile="0" resource="0" file="Source/Interval.h"/>
+      <FILE id="ZodBah" name="Lens.cpp" compile="1" resource="0" file="Source/Lens.cpp"/>
+      <FILE id="TQdBiy" name="Lens.h" compile="0" resource="0" file="Source/Lens.h"/>
       <FILE id="Jjtili" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="R60IrP" name="Score.cpp" compile="1" resource="0" file="Source/Score.cpp"/>
-      <FILE id="oYl82h" name="Score.h" compile="0" resource="0" file="Source/Score.h"/>
-      <FILE id="TCAF6S" name="TonicButton.cpp" compile="1" resource="0" file="Source/TonicButton.cpp"/>
-      <FILE id="CpqWxW" name="TonicButton.h" compile="0" resource="0" file="Source/TonicButton.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
