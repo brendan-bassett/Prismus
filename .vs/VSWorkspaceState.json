@@ -1,8 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Source"
+    "\\JuceLibraryCode",
+    "\\Test"
   ],
-  "SelectedNode": "\\Source\\Main.cpp",
+  "SelectedNode": "\\Test\\Test.vcxproj.user",
   "PreviewInSolutionExplorer": true
 }

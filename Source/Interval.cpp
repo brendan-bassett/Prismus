@@ -16,12 +16,14 @@
 
 using namespace std;
 
+//== CONSTRUCTORS ===========================================================================================================
+
 Interval::Interval(int numerator, int denominator, int octaves) 
 {
 	// Ensure the musical ratio is "proper". That means the numerator divided by the denominator is less than 2, and greater
 	// than or equal to one. Also the numerator and denominator must be expressed as the lowest integers possible. The trick
 	// here is to retain the appropriate octave translation while doing so.
-	
+
 	// A musical interval ratio cannot be 0.
 	if (numerator == 0)
 	{
@@ -44,30 +46,15 @@ Interval::Interval(int numerator, int denominator, int octaves)
 		octaves--;
 	}
 
-	// Combine the given octave information with the given ratio. We need to apply the octaves to EITHER the numerator 
-	// or denominator to avoid dividing an int by an int, resulting in truncated numbers.
-	if (octaves > 0) {
-		numerator = numerator * pow(2, octaves);
-	}
-	else if (octaves < 0)
-	{
-		denominator = denominator * pow(2, -octaves);
-	}
-
-	octaves = 0;
-	// Extract all extra octave translation information from this combined ratio.
+	// Reduce the musical ratio by some number of octaves until it is between unison and 1 octave (1 <= relative pitch < 2).
+	// Here we multiply the denominator by a power of 2 instead of dividing the numerator by a power of 2. This prevents any 
+	// possible loss of information due to int truncation.
 
 	float decimal = (float)numerator / (float)denominator;
-
-	int extraOctaves = 0;
-
-	if (decimal >= 2)
-	{
-		int extraOctaves = (int)log2(decimal);	// This cast from float to int always rounds down to the nearest int.
-		numerator = numerator / pow(2, extraOctaves);
+	while (decimal > 2) {
+		denominator = denominator * 2;
+		octaves++;
 	}
-
-	octaves = octaves + extraOctaves;
 
 	// Make sure that the numerator and denominator are expressed as the smallest integers possible. Divide both the 
 	// numerator and denominator by any common factor.
@@ -95,10 +82,12 @@ Interval::Interval(int numerator, int denominator, int octaves)
 	else {
 		relP = (float)(log2((float)numerator / (float)denominator) + (float)octaves);
 	}
-	
+
 }
 
-bool Interval::isUnison()
+//== PUBLIC METHODS =========================================================================================================
+
+bool Interval::isUnison() const
 {
 	if (relP == 0) {
 		return true;
@@ -106,7 +95,34 @@ bool Interval::isUnison()
 	return false;
 }
 
-string Interval::asString()
+//-----------------------------------------------------------------------------------------------------------------------
+
+string Interval::asString() const
 {
 	return "ratio==" + to_string(numerator) + "/" + to_string(denominator) + "  octaves==" + to_string(octaves);
 }
+
+//-----------------------------------------------------------------------------------------------------------------------
+
+int Interval::getDenominator() const
+{
+	return denominator;
+}
+
+int Interval::getNumerator() const
+{
+	return numerator;
+}
+
+int Interval::getOctaves() const
+{
+	return octaves;
+}
+
+float Interval::getRelP() const
+{
+	return relP;
+}
+
+//== PRIVATE METHODS ========================================================================================================
+

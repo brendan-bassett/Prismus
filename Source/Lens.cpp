@@ -11,49 +11,7 @@ using namespace std;
 
 Lens::Lens()
 {
-    setSize(width, height);
-
-    // Test the formatting of Intervals
-
-    DBG("Input: Interval()");
-    Interval testInterval = Interval();
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(3)");
-    testInterval = Interval();
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(5, 4, 2)");
-    testInterval = Interval(5, 4, 2);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(5, 4, -2)");
-    testInterval = Interval(5, 4, -2);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(0, 1)");
-    testInterval = Interval(0, 1);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(1, 0)");
-    testInterval = Interval(1, 0);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(3, 2)");
-    testInterval = Interval(3, 2);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(3, 4)");
-    testInterval = Interval(3, 4);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(3, 4, -2)");
-    testInterval = Interval(3, 4);
-    DBG("Output: " + testInterval.asString());
-
-    DBG("Input: Interval(52, 28)");
-    testInterval = Interval(52, 14);
-    DBG("Output: " + testInterval.asString());
+    setSize(width, height); 
 }
 
 // ============================================================================
