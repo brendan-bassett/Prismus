@@ -124,5 +124,10 @@ float Interval::getRelP() const
 	return relP;
 }
 
+Interval Interval::translateOctaves(int octaves)
+{
+	return Interval(numerator, denominator, this->octaves + octaves);
+}
+
 //== PRIVATE METHODS ========================================================================================================
 

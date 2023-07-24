@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\JuceLibraryCode",
+    "\\Builds",
+    "\\Builds\\VisualStudio2022",
+    "\\Source",
     "\\Test"
   ],
-  "SelectedNode": "\\Test\\Test.vcxproj.user",
+  "SelectedNode": "\\Test\\test.cpp",
   "PreviewInSolutionExplorer": true
 }

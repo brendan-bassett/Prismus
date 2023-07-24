@@ -34,6 +34,7 @@ public:
 
     //-----------------------------------------------------------------------------------------------------------------------
 
+    Interval translateOctaves(int octaves);
     bool isUnison() const;
     string asString() const;
     
