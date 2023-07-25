@@ -1,11 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Builds",
-    "\\Builds\\VisualStudio2022",
     "\\Source",
     "\\Test"
   ],
-  "SelectedNode": "\\Test\\test.cpp",
+  "SelectedNode": "\\Source",
   "PreviewInSolutionExplorer": true
 }

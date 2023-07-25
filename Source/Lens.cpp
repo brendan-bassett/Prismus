@@ -22,6 +22,7 @@ void Lens::paint(juce::Graphics& g)
     g.setColour(juce::Colours::black);
 
     drawTonicLines(g);
+    drawRootIntervals(g);
 
     // Left margin line
     g.fillRect(LEFT_MARGIN, 0.0f, 5.0f, height);
@@ -35,20 +36,53 @@ void Lens::resized()
     pxPerRelP = height / (topRelP - bottomRelP);
 }
 
-void Lens::drawRootLines(juce::Graphics& g)
+void Lens::drawRootIntervals(juce::Graphics& g)
 {
-    Interval rootInterval = primeRootInterval;
+    rootInterval.removeOctaves(); // Center the root interval near the prime tonic.
 
-    float rootY = relPToPx(rootInterval.getRelP());
-    g.fillRect(LEFT_MARGIN, rootY, width, 1.0f);
-
-    // Draw all root lines above the prime root.
+    // Draw all root lines above and including the prime root.
     while (rootInterval.getRelP() <= topRelP)
     {
         float rootY = relPToPx(rootInterval.getRelP());
-        g.fillRect(LEFT_MARGIN, rootY, width, 1.0f);
 
+        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.0f, width, 6.0f);
+
+        juce::ColourGradient gradient = juce::ColourGradient::vertical(juce::Colours::transparentWhite,
+                                                                        juce::Colours::transparentWhite, 
+                                                                        rootRect);
+        gradient.addColour(0.5f, juce::Colour((uint8_t)0, 165, 255, 0.6f));
+
+        g.setGradientFill(gradient);
+        g.fillRect(rootRect);
+
+        rootInterval.translateOctaves(1);
     }
+
+    // Again center the root interval near the prime tonic.
+    rootInterval.removeOctaves();
+
+    rootInterval.translateOctaves(-1);
+
+    // Draw all root lines below the prime root.
+    while (rootInterval.getRelP() >= bottomRelP)
+    {
+        float rootY = relPToPx(rootInterval.getRelP());
+
+        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.0f, width, 6.0f);
+
+        juce::ColourGradient gradient = juce::ColourGradient::vertical(juce::Colours::transparentWhite,
+            juce::Colours::transparentWhite,
+            rootRect);
+        gradient.addColour(0.5f, juce::Colour((uint8_t)0, 165, 255, 0.6f));
+
+        g.setGradientFill(gradient);
+        g.fillRect(rootRect);
+
+        rootInterval.translateOctaves(-1);
+    }
+
+    // Reset the gradient fill.
+    g.setColour(juce::Colours::black);
 }
 
 void Lens::drawTonicLines(juce::Graphics& g)
@@ -66,15 +100,9 @@ void Lens::drawTonicLines(juce::Graphics& g)
         g.fillRect(LEFT_MARGIN, tonicY, width, 1.0f);
 
         // Draw the indicator arrows within the left margin.
-
-        // Flip the arrows for upper vs lower tonic lines.
-        float arrowBase = 0.0f;
-        float arrowPtLng = 0.0f;
-        float arrowPtSht = 0.0f;
-
-        arrowBase = (tonicY + 6.0f);
-        arrowPtLng = (tonicY - 10.0f);
-        arrowPtSht = (tonicY - 5.0f);
+        float arrowBase = (tonicY + 6.0f);
+        float arrowPtLng = (tonicY - 10.0f);
+        float arrowPtSht = (tonicY - 5.0f);
             
         // Each tonic line gets a number of arrows corresponding to how many octaves it is away from the prime tonic.
         for (int j = 1; j <= abs(i); j++)
@@ -105,14 +133,9 @@ void Lens::drawTonicLines(juce::Graphics& g)
         g.fillRect(LEFT_MARGIN, tonicY, width, 1.0f);
 
         // Draw the indicator arrows within the left margin.
-
-        float arrowBase = 0.0f;
-        float arrowPtLng = 0.0f;
-        float arrowPtSht = 0.0f;
-
-        arrowBase = (tonicY - 6.0f);
-        arrowPtLng = (tonicY + 10.0f);
-        arrowPtSht = (tonicY + 5.0f);
+        float arrowBase = (tonicY - 6.0f);
+        float arrowPtLng = (tonicY + 10.0f);
+        float arrowPtSht = (tonicY + 5.0f);
 
         // Each tonic line gets a number of arrows corresponding to how many octaves it is away from the prime tonic.
         for (int j = 1; j <= abs(i); j++)

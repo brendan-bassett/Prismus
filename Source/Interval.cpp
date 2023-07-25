@@ -16,13 +16,13 @@
 
 using namespace std;
 
-//== CONSTRUCTORS ===========================================================================================================
+//== CONSTRUCTORS ======================================================================================================
 
 Interval::Interval(int numerator, int denominator, int octaves) 
 {
-	// Ensure the musical ratio is "proper". That means the numerator divided by the denominator is less than 2, and greater
-	// than or equal to one. Also the numerator and denominator must be expressed as the lowest integers possible. The trick
-	// here is to retain the appropriate octave translation while doing so.
+	// Ensure the musical ratio is "proper". That means the numerator divided by the denominator is less than 2, and 
+	// greater than or equal to one. Also the numerator and denominator must be expressed as the lowest integers 
+	// possible. The trick here is to retain the appropriate octave translation while doing so.
 
 	// A musical interval ratio cannot be 0.
 	if (numerator == 0)
@@ -46,9 +46,10 @@ Interval::Interval(int numerator, int denominator, int octaves)
 		octaves--;
 	}
 
-	// Reduce the musical ratio by some number of octaves until it is between unison and 1 octave (1 <= relative pitch < 2).
-	// Here we multiply the denominator by a power of 2 instead of dividing the numerator by a power of 2. This prevents any 
-	// possible loss of information due to int truncation.
+	// Reduce the musical ratio by some number of octaves until it is between unison 
+	// and 1 octave (1 <= relative pitch < 2).
+	// Here we multiply the denominator by a power of 2 instead of dividing the numerator by a power of 2. 
+	// This prevents any possible loss of information due to int truncation.
 
 	float decimal = (float)numerator / (float)denominator;
 	while (decimal > 2) {
@@ -75,7 +76,7 @@ Interval::Interval(int numerator, int denominator, int octaves)
 	this->denominator = denominator;
 	this->octaves = octaves;
 
-	// The "size" of the interval in log2 relative pitch space is used frequently with rendering. Calculate and save this.
+	// The "size" of the interval in log2 relative pitch space is used frequently with rendering. Save this calculation.
 	if (((float)numerator / (float)denominator) == 1 && octaves == 0) {
 		relP = 0;
 	}
@@ -85,7 +86,7 @@ Interval::Interval(int numerator, int denominator, int octaves)
 
 }
 
-//== PUBLIC METHODS =========================================================================================================
+//== PUBLIC METHODS ====================================================================================================
 
 string Interval::asString() const
 {
@@ -115,12 +116,12 @@ void Interval::removeOctaves()
 	octaves = 0;
 }
 
-void Interval::translateOctaves(int octaves)
+void Interval::translateOctaves(int translation)
 {
-	this->octaves = this->octaves + octaves;
+	octaves = octaves + translation;
 }
 
-//-- GETTERS ----------------------------------------------------------------------------------------------------------------
+//-- GETTERS -----------------------------------------------------------------------------------------------------------
 
 int Interval::getDenominator() const
 {
@@ -149,5 +150,5 @@ float Interval::getRelP(bool includeOctaves) const
 	}
 }
 
-//== PRIVATE METHODS ========================================================================================================
+//== PRIVATE METHODS ===================================================================================================
 
