@@ -39,6 +39,9 @@ void Lens::drawRootLines(juce::Graphics& g)
 {
     Interval rootInterval = primeRootInterval;
 
+    float rootY = relPToPx(rootInterval.getRelP());
+    g.fillRect(LEFT_MARGIN, rootY, width, 1.0f);
+
     // Draw all root lines above the prime root.
     while (rootInterval.getRelP() <= topRelP)
     {

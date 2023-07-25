@@ -44,7 +44,7 @@ private:
     const float LEFT_MARGIN = 30.0f;
 
     /// @brief The interval for the root of the current chord structure.
-    Interval primeRootInterval = Interval();
+    Interval primeRootInterval = Interval(3, 2);
 
     //-----------------------------------------------------------------------------------------------------------------------
 

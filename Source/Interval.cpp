@@ -80,29 +80,47 @@ Interval::Interval(int numerator, int denominator, int octaves)
 		relP = 0;
 	}
 	else {
-		relP = (float)(log2((float)numerator / (float)denominator) + (float)octaves);
+		relP = log2((float)numerator / (float)denominator);
 	}
 
 }
 
 //== PUBLIC METHODS =========================================================================================================
 
-bool Interval::isUnison() const
-{
-	if (relP == 0) {
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------------------------------------------------
-
 string Interval::asString() const
 {
 	return "ratio==" + to_string(numerator) + "/" + to_string(denominator) + "  octaves==" + to_string(octaves);
 }
 
-//-----------------------------------------------------------------------------------------------------------------------
+bool Interval::isUnison(bool considerOctaves) const
+{
+	if (considerOctaves)
+	{
+		if (relP == 0 && octaves == 0)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	if (relP == 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+void Interval::removeOctaves()
+{
+	octaves = 0;
+}
+
+void Interval::translateOctaves(int octaves)
+{
+	this->octaves = this->octaves + octaves;
+}
+
+//-- GETTERS ----------------------------------------------------------------------------------------------------------------
 
 int Interval::getDenominator() const
 {
@@ -119,14 +137,16 @@ int Interval::getOctaves() const
 	return octaves;
 }
 
-float Interval::getRelP() const
+float Interval::getRelP(bool includeOctaves) const
 {
-	return relP;
-}
-
-Interval Interval::translateOctaves(int octaves)
-{
-	return Interval(numerator, denominator, this->octaves + octaves);
+	if (includeOctaves)
+	{
+		return relP + octaves;
+	}
+	else
+	{
+		return relP;
+	}
 }
 
 //== PRIVATE METHODS ========================================================================================================
