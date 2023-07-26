@@ -52,9 +52,11 @@ Interval::Interval(int numerator, int denominator, int octaves)
 	// This prevents any possible loss of information due to int truncation.
 
 	float decimal = (float)numerator / (float)denominator;
+
 	while (decimal > 2) {
 		denominator = denominator * 2;
 		octaves++;
+		decimal = (float)numerator / (float)denominator;
 	}
 
 	// Make sure that the numerator and denominator are expressed as the smallest integers possible. Divide both the 
@@ -90,7 +92,58 @@ Interval::Interval(int numerator, int denominator, int octaves)
 
 string Interval::asString() const
 {
-	return "ratio==" + to_string(numerator) + "/" + to_string(denominator) + "  octaves==" + to_string(octaves);
+	return "ratio==" + to_string(numerator) + ":" + to_string(denominator) + "  octaves==" + to_string(octaves);
+}
+
+string Interval::asShorthand(bool unisonIsTonic) const
+{
+	if (isUnison())
+	{
+		if (unisonIsTonic == true)
+		{
+			return "T";
+		}
+		return "U";
+	}
+
+	if (numerator == 3 && denominator == 2)
+	{
+		return "3";
+	}
+
+	if (numerator == 4 && denominator == 3)
+	{
+		return "4";
+	}
+
+	if (numerator == 5 && denominator == 4)
+	{
+		return "5";
+	}
+
+	if (numerator == 6 && denominator == 5)
+	{
+		return "6";
+	}
+
+	if (numerator == 7 && denominator == 4)
+	{
+		return "7";
+	}
+
+	if (numerator < 10 && denominator < 10)
+	{
+		return to_string(numerator) + to_string(denominator);
+	}
+
+	string ratio = to_string(numerator) + ":" + to_string(denominator);
+
+	if (ratio.length() > 8)
+	{
+		return "X";
+	}
+
+	return ratio;
 }
 
 bool Interval::isUnison(bool considerOctaves) const

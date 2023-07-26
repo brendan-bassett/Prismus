@@ -1,20 +1,28 @@
 #include <iostream>
 #include <string>
+#include <forward_list>
 
 #include "Lens.h"
-#include "Interval.h"
 
 
 using namespace std;
 
-// ============================================================================
+// =====================================================================================================================
 
 Lens::Lens()
 {
     setSize(width, height); 
+
+    // TODO: REMOVE THIS - Populate the chord list with intervals
+
+    chordList.push_front(Interval());
+    chordList.push_front(Interval(5, 4));
+    chordList.push_front(Interval(3, 2));
+    chordList.push_front(Interval(7, 4));
+
 }
 
-// ============================================================================
+// =====================================================================================================================
 
 void Lens::paint(juce::Graphics& g)
 {
@@ -27,6 +35,8 @@ void Lens::paint(juce::Graphics& g)
     // Left margin line
     g.fillRect(LEFT_MARGIN, 0.0f, 5.0f, height);
     g.fillRect((LEFT_MARGIN - 3.0f), 0.0f, 1.0f, height);
+
+    drawChords(g);
 }
 
 void Lens::resized()
@@ -35,10 +45,52 @@ void Lens::resized()
     height = getHeight();
     pxPerRelP = height / (topRelP - bottomRelP);
 }
+void Lens::drawChords(juce::Graphics& g)
+{
+    for (Interval note : chordList)
+    {
+        float noteAbsRelP = note.getRelP() + rootInterval.getRelP();
+
+        if (noteAbsRelP > topRelP || noteAbsRelP < bottomRelP)
+        {
+            continue;
+        }
+
+        float noteY = relPToPx(noteAbsRelP);
+
+        juce::Rectangle noteRect = juce::Rectangle(LEFT_MARGIN + 50.0f, 
+                                                    noteY - 4.0f, 
+                                                    width - LEFT_MARGIN - (50.0f * 2), 
+                                                    8.0f);
+
+        g.drawRect(noteRect, 1.0f);
+
+        Interval harmonic = Interval(2, 1);
+        float harmonicY = relPToPx(noteAbsRelP + harmonic.getRelP());
+        float harmonicInsetX = 0.0f;
+
+        for (int h = 2; harmonicY > 0; h++)
+        {
+            harmonicInsetX = harmonicInsetX + (18.0f / h);
+            g.drawLine(noteRect.getX() + harmonicInsetX, 
+                        harmonicY, 
+                        noteRect.getRight() - harmonicInsetX, 
+                        harmonicY, 2.0f);
+
+            harmonic = Interval(h + 1, 1);
+            harmonicY = relPToPx(noteAbsRelP + harmonic.getRelP());
+
+        }
+
+    }
+}
 
 void Lens::drawRootIntervals(juce::Graphics& g)
-{
-    rootInterval.removeOctaves(); // Center the root interval near the prime tonic.
+{ 
+    // Center the root interval near the prime tonic.
+    rootInterval.removeOctaves();
+
+    g.setFont(20.0f); // 20pf font
 
     // Draw all root lines above and including the prime root.
     while (rootInterval.getRelP() <= topRelP)
@@ -55,15 +107,15 @@ void Lens::drawRootIntervals(juce::Graphics& g)
         g.setGradientFill(gradient);
         g.fillRect(rootRect);
 
+        string shorthand = rootInterval.asShorthand();
+
         rootInterval.translateOctaves(1);
     }
 
-    // Again center the root interval near the prime tonic.
+    // Draw all root lines below the prime root.
     rootInterval.removeOctaves();
-
     rootInterval.translateOctaves(-1);
 
-    // Draw all root lines below the prime root.
     while (rootInterval.getRelP() >= bottomRelP)
     {
         float rootY = relPToPx(rootInterval.getRelP());
@@ -83,6 +135,9 @@ void Lens::drawRootIntervals(juce::Graphics& g)
 
     // Reset the gradient fill.
     g.setColour(juce::Colours::black);
+
+    // Center the root interval near the prime tonic.
+    rootInterval.removeOctaves();
 }
 
 void Lens::drawTonicLines(juce::Graphics& g)

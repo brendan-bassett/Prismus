@@ -1,6 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <forward_list>
 
 #include "Interval.h"
 
@@ -24,6 +25,10 @@ public:
 
 private:
     //==================================================================================================================
+
+    /// @brief Draw all notes in the current chord structure.
+    /// @param g The juce Graphics object used for rendering.
+    void drawChords(juce::Graphics& g);
 
     /// @brief Draw the lines for the root of the current chord structure.
     /// @param g The juce Graphics object used for rendering.
@@ -59,6 +64,8 @@ private:
     float bottomRelP = -2.2f;
     /// @brief The number of pixels corresponding to a relative pitch distance of 1.
     float pxPerRelP = 0.0f;
+
+    std::forward_list<Interval> chordList = std::forward_list<Interval>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Lens)
 

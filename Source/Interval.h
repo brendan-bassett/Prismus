@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <string>
+
 using std::string;
 
 /// @brief A musical interval expressed as a relative intonation interval.
@@ -34,9 +36,14 @@ public:
     /// @return A string representation of the interval.
     string asString() const;
 
+    /// @brief Create shorthand representation of the interval.
+    /// @param unisonIsTonic    Renders "T" if true or "U" if false. Defaults to false.
+    /// @return A shorthand string representation of the interval. At most 8 characters.
+    string asShorthand(bool unisonIsTonic = false) const;
+
     /// @brief Determine whether the interval is unison.
-    /// @param considerOctaves Whether to consider octaves. If TRUE, the function will return TRUE only if relP and 
-    ///                        octaves are both 0. Defaults to TRUE.
+    /// @param considerOctaves Whether to consider octaves. If true, the function will return true only if relP and 
+    ///                        octaves are both 0. Defaults to true.
     /// @return Whether the interval is unison.
     bool isUnison(bool considerOctaves = true) const;
 
@@ -44,7 +51,7 @@ public:
     void removeOctaves();
 
     /// @brief  Translate the interval by a number of octaves.
-    /// @param octaves The number of octaves to translate.
+    /// @param octaves  The number of octaves to translate.
     void translateOctaves(int octaves);
 
     //-- GETTERS -------------------------------------------------------------------------------------------------------
