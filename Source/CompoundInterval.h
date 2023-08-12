@@ -22,7 +22,11 @@ class CompoundInterval
 public:
     //==================================================================================================================
 
-    CompoundInterval(Interval parentInterval, Interval childInterval);
+    CompoundInterval::CompoundInterval(Interval parentInterval, Interval childInterval)
+        : parentInterval{ parentInterval }, childInterval{ childInterval }
+    {
+
+    }
 
     Interval const childInterval {};
     Interval const parentInterval {};

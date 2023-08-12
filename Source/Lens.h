@@ -53,11 +53,6 @@ private:
 
     //------------------------------------------------------------------------------------------------------------------
 
-    /// @brief The height of the component in pixels.
-    float height = 800.0f;
-    /// @brief The width of the component in pixels.
-    float width = 240.0f;
-
     /// @brief The top of the component in relative pitch space.
     float topRelP = 5.0f;
     /// @brief The bottom of the component in relative pitch space.

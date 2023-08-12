@@ -4,8 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
   <MAINGROUP id="jhSk9f" name="Prismus">
     <GROUP id="{8FA4013B-D3C1-77A6-1407-006BCF154FB7}" name="Source">
-      <FILE id="zhQJkE" name="CompoundInterval.cpp" compile="1" resource="0"
-            file="Source/CompoundInterval.cpp"/>
+      <FILE id="sBL1Bh" name="AudioComponent.h" compile="0" resource="0"
+            file="Source/AudioComponent.h"/>
       <FILE id="JLrU0s" name="CompoundInterval.h" compile="0" resource="0"
             file="Source/CompoundInterval.h"/>
       <FILE id="qSo3VF" name="Interval.cpp" compile="1" resource="0" file="Source/Interval.cpp"/>
@@ -13,6 +13,7 @@
       <FILE id="ZodBah" name="Lens.cpp" compile="1" resource="0" file="Source/Lens.cpp"/>
       <FILE id="TQdBiy" name="Lens.h" compile="0" resource="0" file="Source/Lens.h"/>
       <FILE id="Jjtili" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="tuTs3k" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1"/>
@@ -30,10 +31,20 @@
         <MODULEPATH id="juce_gui_basics" path="../../../JUCE.git/JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../JUCE.git/JUCE/modules"/>
         <MODULEPATH id="juce_opengl" path="../../../JUCE.git/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../JUCE.git/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../JUCE.git/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../JUCE.git/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../JUCE.git/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../JUCE.git/JUCE/modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>
   <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>

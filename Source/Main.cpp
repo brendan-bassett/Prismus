@@ -7,7 +7,7 @@
 */
 
 #include <JuceHeader.h>
-#include "Lens.h"
+#include "MainComponent.h"
 
 //==============================================================================
 class PrismusApplication  : public juce::JUCEApplication
@@ -65,7 +65,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new Lens(), true);
+            setContentOwned (new MainComponent, true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);

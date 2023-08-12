@@ -11,8 +11,6 @@ using namespace std;
 
 Lens::Lens()
 {
-    setSize(width, height); 
-
     // TODO: REMOVE THIS - Populate the chord list with intervals
 
     chordList.push_front(Interval());
@@ -33,18 +31,17 @@ void Lens::paint(juce::Graphics& g)
     drawRootIntervals(g);
 
     // Left margin line
-    g.fillRect(LEFT_MARGIN, 0.0f, 5.0f, height);
-    g.fillRect((LEFT_MARGIN - 3.0f), 0.0f, 1.0f, height);
+    g.fillRect(LEFT_MARGIN, 0.f, 5.f, (float)getHeight());
+    g.fillRect((LEFT_MARGIN - 3.f), 0.f, 1.f, (float)getHeight());
 
     drawChords(g);
 }
 
 void Lens::resized()
 {
-    width = getWidth();
-    height = getHeight();
-    pxPerRelP = height / (topRelP - bottomRelP);
+    pxPerRelP = (float)getHeight() / (topRelP - bottomRelP);
 }
+
 void Lens::drawChords(juce::Graphics& g)
 {
     for (Interval note : chordList)
@@ -58,10 +55,10 @@ void Lens::drawChords(juce::Graphics& g)
 
         float noteY = relPToPx(noteAbsRelP);
 
-        juce::Rectangle noteRect = juce::Rectangle(LEFT_MARGIN + 50.0f, 
-                                                    noteY - 4.0f, 
-                                                    width - LEFT_MARGIN - (50.0f * 2), 
-                                                    8.0f);
+        juce::Rectangle noteRect = juce::Rectangle(LEFT_MARGIN + 50.f, 
+                                                    noteY - 4.f, 
+                                                    getWidth() - LEFT_MARGIN - (50.f * 2),
+                                                    8.f);
 
         g.drawRect(noteRect, 1.0f);
 
@@ -97,7 +94,7 @@ void Lens::drawRootIntervals(juce::Graphics& g)
     {
         float rootY = relPToPx(rootInterval.getRelP());
 
-        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.0f, width, 6.0f);
+        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.f, (float)getWidth(), 6.f);
 
         juce::ColourGradient gradient = juce::ColourGradient::vertical(juce::Colours::transparentWhite,
                                                                         juce::Colours::transparentWhite, 
@@ -120,7 +117,7 @@ void Lens::drawRootIntervals(juce::Graphics& g)
     {
         float rootY = relPToPx(rootInterval.getRelP());
 
-        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.0f, width, 6.0f);
+        juce::Rectangle rootRect = juce::Rectangle(LEFT_MARGIN, rootY - 3.f, (float)getWidth(), 6.f);
 
         juce::ColourGradient gradient = juce::ColourGradient::vertical(juce::Colours::transparentWhite,
             juce::Colours::transparentWhite,
@@ -144,7 +141,7 @@ void Lens::drawTonicLines(juce::Graphics& g)
 {
     // Draw the prime tonic line in bold
     float tonicY = relPToPx(0.0f);
-    g.fillRect(0.0f, tonicY, width, 3.0f);
+    g.fillRect(0.f, tonicY, (float)getWidth(), 3.f);
 
     // Draw all tonic lines ABOVE the prime tonic.
     for (int i = 1; i <= topRelP; i++)
@@ -152,7 +149,7 @@ void Lens::drawTonicLines(juce::Graphics& g)
         tonicY = relPToPx(i);
 
         // Draw the tonic line.
-        g.fillRect(LEFT_MARGIN, tonicY, width, 1.0f);
+        g.fillRect(LEFT_MARGIN, tonicY, (float)getWidth(), 1.f);
 
         // Draw the indicator arrows within the left margin.
         float arrowBase = (tonicY + 6.0f);
@@ -163,7 +160,7 @@ void Lens::drawTonicLines(juce::Graphics& g)
         for (int j = 1; j <= abs(i); j++)
         {
 
-            float arrowX = (LEFT_MARGIN - (j * 5.0f) - 2.0f);
+            float arrowX = (LEFT_MARGIN - (j * 5.f) - 2.f);
 
             // Alternate the lenths of the arrows for greater readability.
             if ((j % 2) == 0)
@@ -185,7 +182,7 @@ void Lens::drawTonicLines(juce::Graphics& g)
         tonicY = relPToPx(i);
 
         // Draw the tonic line.
-        g.fillRect(LEFT_MARGIN, tonicY, width, 1.0f);
+        g.fillRect(LEFT_MARGIN, tonicY, (float)getWidth(), 1.0f);
 
         // Draw the indicator arrows within the left margin.
         float arrowBase = (tonicY - 6.0f);
