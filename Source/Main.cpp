@@ -3,6 +3,9 @@
 
     This file contains the basic startup code for a JUCE application.
 
+    Main.cpp
+    Author:  Brendan D Bassett
+
   ==============================================================================
 */
 

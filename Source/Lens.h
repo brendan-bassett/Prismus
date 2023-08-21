@@ -6,7 +6,6 @@
 #include "Interval.h"
 
 /// @brief Displays chords in relative intonation.
-
 class Lens  : public juce::Component
 {
 

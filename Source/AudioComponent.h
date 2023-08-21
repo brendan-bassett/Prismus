@@ -1,24 +1,24 @@
 /*
-//===================================================================================================================
+//=============================================================================
 
     AudioComponent.h
     Created: 12 Aug 2023 12:49:02pm
-    Author:  Brendan Bassett
+    Author:  Brendan D Bassett
 
-//===================================================================================================================
+//=============================================================================
 */
 
 #pragma once
 
 
 //===================================================================================================================
-/* CLASS: AudioComponent
-*/
+
+/// @brief Displays chords in relative intonation.
 class AudioComponent  : public juce::AudioAppComponent, public juce::ChangeListener
 {
 
 public:
-    //===============================================================================================================
+    //=========================================================================
 
     AudioComponent() : state(Stopped)
     {
@@ -56,7 +56,7 @@ public:
         shutdownAudio();
     }
 
-    //---------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
     {
@@ -64,8 +64,10 @@ public:
         {
             if (transportSource.isPlaying())
                 changeState(Playing);
-            else
+            else if ((state == Stopping) || (state == Playing))
                 changeState(Stopped);
+            else if (Pausing == state)
+                changeState(Paused);
         }
     }
 
@@ -151,17 +153,19 @@ public:
     }
 
 private:
-    //================================================================================================================
+    //=========================================================================
 
     enum TransportState
     {
-        Stopped,
-        Starting,
+        Paused,
+        Pausing,
         Playing,
+        Starting,
+        Stopped,
         Stopping
     };
 
-    //-----------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 
     void changeState(TransportState newState)
     {
@@ -171,19 +175,30 @@ private:
 
             switch (state)
             {
-            case Stopped:
-                stopButton.setEnabled(false);
-                playButton.setEnabled(true);
-                transportSource.setPosition(0.0);
+            case Paused:
+                playButton.setButtonText("Resume");
+                stopButton.setButtonText("Start Over");
                 break;
 
-            case Starting:
-                playButton.setEnabled(false);
-                transportSource.start();
+            case Pausing:
+                transportSource.stop();
                 break;
 
             case Playing:
+                playButton.setButtonText("Pause");
+                stopButton.setButtonText("Stop");
                 stopButton.setEnabled(true);
+                break;
+
+            case Starting:
+                transportSource.start();
+                break;
+
+            case Stopped:
+                playButton.setButtonText("Play");
+                stopButton.setButtonText("Stop");
+                stopButton.setEnabled(false);
+                transportSource.setPosition(0.0);
                 break;
 
             case Stopping:
@@ -222,15 +237,21 @@ private:
 
     void playButtonClicked()
     {
-        changeState(Starting);
+        if ((state == Stopped) || (state == Paused))
+            changeState(Starting);
+        else if (state == Playing)
+            changeState(Pausing);
     }
 
     void stopButtonClicked()
     {
-        changeState(Stopping);
+        if (state == Paused)
+            changeState(Stopped);
+        else
+            changeState(Stopping);
     }
 
-    //--------------------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
 
     juce::Random random;
     juce::Slider levelSlider;
