@@ -5,11 +5,12 @@
     "\\Builds\\VisualStudio2022",
     "\\Builds\\VisualStudio2022\\packages",
     "\\Builds\\VisualStudio2022\\packages\\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7",
-    "\\Builds\\VisualStudio2022\\x64",
+    "\\Builds\\VisualStudio2022\\packages\\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.7\\build",
     "\\Builds\\VisualStudio2022\\x64\\Debug",
     "\\Builds\\VisualStudio2022\\x64\\Debug\\App",
     "\\Extras",
     "\\Source"
   ],
+  "SelectedNode": "\\Builds\\VisualStudio2022\\Prismus_App.vcxproj",
   "PreviewInSolutionExplorer": true
 }

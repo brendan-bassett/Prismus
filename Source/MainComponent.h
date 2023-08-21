@@ -23,7 +23,7 @@ class MainComponent  : public juce::Component
 public:
     MainComponent()
     {
-        setSize(240, 800);
+        setSize(480, 800);
         addAndMakeVisible(lens);
         addAndMakeVisible(audioComponent);
     }
@@ -38,8 +38,8 @@ public:
 
     void resized() override
     {
-        lens.setBounds(0, 0, getWidth(), getHeight() - 60);
-        audioComponent.setBounds(20, getHeight() - 40, getWidth() - 40, 20);
+        lens.setBounds(0, 0, getWidth() - 240, getHeight());
+        audioComponent.setBounds(240, 0, getWidth() - 240, getHeight());
     }
 
 private:

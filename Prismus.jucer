@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="nRoLuw" name="Prismus" projectType="guiapp" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1">
+              addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
+              pluginFormats="buildVST3" pluginCharacteristicsValue="pluginWantsMidiIn">
   <MAINGROUP id="jhSk9f" name="Prismus">
     <GROUP id="{8FA4013B-D3C1-77A6-1407-006BCF154FB7}" name="Source">
       <FILE id="sBL1Bh" name="AudioComponent.h" compile="0" resource="0"
             file="Source/AudioComponent.h"/>
+      <FILE id="JZSajk" name="AudioProcessor.h" compile="0" resource="0"
+            file="Source/AudioProcessor.h"/>
       <FILE id="JLrU0s" name="CompoundInterval.h" compile="0" resource="0"
             file="Source/CompoundInterval.h"/>
       <FILE id="qSo3VF" name="Interval.cpp" compile="1" resource="0" file="Source/Interval.cpp"/>
