@@ -10,6 +10,14 @@
 
 #pragma once
 
+#include <iostream>
+#include <JuceHeader.h>
+#include <src/common/RingBuffer.h>
+#include "rubberband/RubberBandStretcher.h"
+#include <juce_audio_basics/sources/juce_AudioSource.h>
+
+using RubberBand::RubberBandStretcher;
+using RubberBand::RingBuffer;
 
 //===================================================================================================================
 
@@ -73,7 +81,9 @@ public:
 
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override
     {
-
+        /*
+        * SIMPLE AUDIO FILE PLAYBACK
+        *
         if (readerSource.get() == nullptr)
         {
             bufferToFill.clearActiveBufferRegion();
@@ -81,21 +91,19 @@ public:
         }
 
         transportSource.getNextAudioBlock(bufferToFill);
+        */
 
         /*
-        * LIVE AUDIO I/O
-        * 
+        * LIVE AUDIO I/O FROM JUCE "Tutorial: Processing audio input"
+        * https://docs.juce.com/master/tutorial_processing_audio_input.html
+        *
         auto* device = deviceManager.getCurrentAudioDevice();
         auto activeInputChannels = device->getActiveInputChannels();
         auto activeOutputChannels = device->getActiveOutputChannels();
-        //! [getNextAudioBlock]
 
-        //! [getNextAudioBlock 2]
         auto maxInputChannels = activeInputChannels.getHighestBit() + 1;
         auto maxOutputChannels = activeOutputChannels.getHighestBit() + 1;
-        //! [getNextAudioBlock 2]
 
-        //! [getNextAudioBlock 3]
         auto level = (float)levelSlider.getValue();
 
         for (auto channel = 0; channel < maxOutputChannels; ++channel)
@@ -104,18 +112,16 @@ public:
             {
                 bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
             }
-            //! [getNextAudioBlock 3]
 
-            //! [getNextAudioBlock 4]
             else
             {
-                auto actualInputChannel = channel % maxInputChannels; // [1]
+                auto actualInputChannel = channel % maxInputChannels;
 
-                if (!activeInputChannels[channel]) // [2]
+                if (!activeInputChannels[channel])
                 {
                     bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
                 }
-                else // [3]
+                else
                 {
                     auto* inBuffer = bufferToFill.buffer->getReadPointer(actualInputChannel,
                         bufferToFill.startSample);
@@ -130,10 +136,37 @@ public:
             }
         }
         */
+
+        auto buffer = bufferToFill.buffer;
+        auto readPointers = buffer->getArrayOfReadPointers();
+        auto writePointers = buffer->getArrayOfWritePointers();
+
+        rubberband->process(readPointers, buffer->getNumSamples(), false);
+
+        auto samplesAvailable = rubberband->available();
+
+        DBG("Samples available: " << samplesAvailableFromStretcher);
+
+        if (buffer->getNumSamples() < samplesAvailable)
+        {
+            auto rbOutput = rubberband->retrieve(writePointers, buffer->getNumSamples());
+
+            transportSource.getNextAudioBlock(bufferToFill);
+        }
+
     }
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override
     {
+        // "Dynamic memory": Memory that is allocated while the app is running.
+        rubberband = std::make_unique<RubberBandStretcher>(sampleRate,
+            2,
+            RubberBandStretcher::PresetOption::DefaultOptions,
+            0.5,
+            0.5);
+
+        rubberband->reset();
+
         transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
     }
 
@@ -211,7 +244,7 @@ private:
     void openButtonClicked()
     {
         chooser = std::make_unique<juce::FileChooser>("Select an mp3 file to play...",
-            juce::File{"C:/Users/bbass/GitRepos/Prismus/Extras/Drones"},
+            juce::File("C://Users/bbass/GitRepos/Prismus/Extras/Drones"),
             "*.mp3");
         auto chooserFlags = juce::FileBrowserComponent::openMode
             | juce::FileBrowserComponent::canSelectFiles;
@@ -267,6 +300,8 @@ private:
 
     std::unique_ptr<juce::FileChooser> chooser;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+
+    std::unique_ptr< RubberBandStretcher> rubberband;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioComponent)
 };
