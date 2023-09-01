@@ -1,12 +1,14 @@
 /*
   ==============================================================================
 
-    Interval.cpp
-    Created: 6 Jul 2023 1:10:26pm
-    Author:  Brendan Bassett
+	Interval.cpp
+	Created: 6 Jul 2023 1:10:26pm
+	Author:  Brendan D Bassett
 
   ==============================================================================
 */
+
+#pragma once
 
 #include <cmath>
 #include <iostream>
@@ -18,7 +20,7 @@ using namespace std;
 
 //== CONSTRUCTORS ======================================================================================================
 
-Interval::Interval(int numerator, int denominator, int octaves) 
+Interval::Interval(int numerator, int denominator, int octaves)
 {
 	// Ensure the musical ratio is "proper". That means the numerator divided by the denominator is less than 2, and 
 	// greater than or equal to one. Also the numerator and denominator must be expressed as the lowest integers 

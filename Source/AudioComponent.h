@@ -10,19 +10,11 @@
 
 #pragma once
 
-#include <iostream>
 #include <JuceHeader.h>
-#include <src/common/RingBuffer.h>
-#include "rubberband/RubberBandStretcher.h"
-#include <juce_audio_basics/sources/juce_AudioSource.h>
-
-using RubberBand::RubberBandStretcher;
-using RubberBand::RingBuffer;
-
 //===================================================================================================================
 
 /// @brief Displays chords in relative intonation.
-class AudioComponent  : public juce::AudioAppComponent, public juce::ChangeListener
+class AudioComponent : public juce::Component, public juce::ChangeListener
 {
 
 public:
@@ -55,13 +47,10 @@ public:
 
         formatManager.registerBasicFormats();
         transportSource.addChangeListener(this);
-
-        setAudioChannels(0, 2);
     }
 
     ~AudioComponent() override
     {
-        shutdownAudio();
     }
 
     //-------------------------------------------------------------------------
@@ -77,102 +66,6 @@ public:
             else if (Pausing == state)
                 changeState(Paused);
         }
-    }
-
-    void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override
-    {
-        /*
-        * SIMPLE AUDIO FILE PLAYBACK
-        *
-        if (readerSource.get() == nullptr)
-        {
-            bufferToFill.clearActiveBufferRegion();
-            return;
-        }
-
-        transportSource.getNextAudioBlock(bufferToFill);
-        */
-
-        /*
-        * LIVE AUDIO I/O FROM JUCE "Tutorial: Processing audio input"
-        * https://docs.juce.com/master/tutorial_processing_audio_input.html
-        *
-        auto* device = deviceManager.getCurrentAudioDevice();
-        auto activeInputChannels = device->getActiveInputChannels();
-        auto activeOutputChannels = device->getActiveOutputChannels();
-
-        auto maxInputChannels = activeInputChannels.getHighestBit() + 1;
-        auto maxOutputChannels = activeOutputChannels.getHighestBit() + 1;
-
-        auto level = (float)levelSlider.getValue();
-
-        for (auto channel = 0; channel < maxOutputChannels; ++channel)
-        {
-            if ((!activeOutputChannels[channel]) || maxInputChannels == 0)
-            {
-                bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
-            }
-
-            else
-            {
-                auto actualInputChannel = channel % maxInputChannels;
-
-                if (!activeInputChannels[channel])
-                {
-                    bufferToFill.buffer->clear(channel, bufferToFill.startSample, bufferToFill.numSamples);
-                }
-                else
-                {
-                    auto* inBuffer = bufferToFill.buffer->getReadPointer(actualInputChannel,
-                        bufferToFill.startSample);
-                    auto* outBuffer = bufferToFill.buffer->getWritePointer(channel, bufferToFill.startSample);
-
-                    for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
-                    {
-                        auto noise = (random.nextFloat() * 2.0f) - 1.0f;
-                        outBuffer[sample] = inBuffer[sample] + (inBuffer[sample] * noise * level);
-                    }
-                }
-            }
-        }
-        */
-
-        auto buffer = bufferToFill.buffer;
-        auto readPointers = buffer->getArrayOfReadPointers();
-        auto writePointers = buffer->getArrayOfWritePointers();
-
-        rubberband->process(readPointers, buffer->getNumSamples(), false);
-
-        auto samplesAvailable = rubberband->available();
-
-        DBG("Samples available: " << samplesAvailableFromStretcher);
-
-        if (buffer->getNumSamples() < samplesAvailable)
-        {
-            auto rbOutput = rubberband->retrieve(writePointers, buffer->getNumSamples());
-
-            transportSource.getNextAudioBlock(bufferToFill);
-        }
-
-    }
-
-    void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override
-    {
-        // "Dynamic memory": Memory that is allocated while the app is running.
-        rubberband = std::make_unique<RubberBandStretcher>(sampleRate,
-            2,
-            RubberBandStretcher::PresetOption::DefaultOptions,
-            0.5,
-            0.5);
-
-        rubberband->reset();
-
-        transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
-    }
-
-    void releaseResources() override
-    {
-        transportSource.releaseResources();
     }
 
     void resized() override
@@ -300,8 +193,6 @@ private:
 
     std::unique_ptr<juce::FileChooser> chooser;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
-
-    std::unique_ptr< RubberBandStretcher> rubberband;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioComponent)
 };

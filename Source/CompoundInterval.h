@@ -28,7 +28,7 @@ public:
 
     }
 
-    Interval const childInterval {};
-    Interval const parentInterval {};
+    Interval const childInterval{};
+    Interval const parentInterval{};
 
 };

@@ -1,3 +1,13 @@
+/*
+  ==============================================================================
+
+    Lens.h
+    Created: 1 Sep 2023 2:59:01pm
+    Author:  Brendan D Bassett
+
+  ==============================================================================
+*/
+
 #pragma once
 
 #include <JuceHeader.h>
@@ -6,18 +16,18 @@
 #include "Interval.h"
 
 /// @brief Displays chords in relative intonation.
-class Lens  : public juce::Component
+class Lens : public juce::Component
 {
 
 public:
     //==================================================================================================================
-    
+
     Lens();
 
     //------------------------------------------------------------------------------------------------------------------
 
     /// @copydoc Component::paint()
-    void paint (juce::Graphics& g) override;
+    void paint(juce::Graphics& g) override;
 
     /// @copydoc Component::paint()
     void resized() override;

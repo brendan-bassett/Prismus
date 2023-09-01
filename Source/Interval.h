@@ -3,7 +3,7 @@
 
     Interval.h
     Created: 6 Jul 2023 1:10:26pm
-    Author:  Brendan Bassett
+    Author:  Brendan D Bassett
 
   ==============================================================================
 */
@@ -86,10 +86,10 @@ private:
     int		denominator {};
 
     /// @brief The numerator of the musical ratio.
-    int		numerator {};
+    int		numerator{};
 
     /// @brief The number of octaves to translate the ratio by.
-    int		octaves {};
+    int		octaves{};
 
     /// @brief The relative pitch distance of the musical ratio. DOES NOT INCLUDE OCTAVES, because they can be added 
     ///        with simple math when calculating the overall relative pitch of the interval.
