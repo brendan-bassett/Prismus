@@ -51,3 +51,20 @@ Doxygen
 
 -> copies the documentation from the overridden paint() method
 
+------------------------------------------------------------------------------------------
+rubberband build
+------------------------------------------------------------------------------------------
+
+"Just run your build command (e.g. ninja) and Meson will regenerate as necessary.
+If ninja fails, run "ninja reconfigure" or "meson setup --reconfigure"
+to force Meson to regenerate.
+
+If build failures persist, run "meson setup --wipe" to rebuild from scratch
+using the same options as passed when configuring the build.
+To change option values, run "meson configure" instead."
+
+
+
+meson setup build --reconfigure --wipe -Djni=disabled -Db_vscrt=mdd
+
+meson compile -C build

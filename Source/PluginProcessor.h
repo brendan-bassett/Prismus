@@ -62,7 +62,13 @@ public:
 private:
     //==============================================================================
 
-    std::unique_ptr<RubberBandStretcher> rubberband;
+    std::unique_ptr<RubberBandStretcher> rubberband1;
+    std::unique_ptr<RubberBandStretcher> rubberband2;
+    std::unique_ptr<RubberBandStretcher> rubberband3;
+
+    juce::AudioBuffer<float> rbBuffer1;
+    juce::AudioBuffer<float> rbBuffer2;
+    juce::AudioBuffer<float> rbBuffer3;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismusAudioProcessor)
 };

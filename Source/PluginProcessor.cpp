@@ -105,14 +105,38 @@ void PrismusAudioProcessor::changeProgramName (int index, const juce::String& ne
 //==============================================================================
 void PrismusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // "Dynamic memory": Memory that is allocated while the app is running.
-    rubberband = std::make_unique<RubberBandStretcher>(sampleRate,
-        getTotalNumOutputChannels(),
-        RubberBandStretcher::PresetOption::DefaultOptions,
-        0.5,
-        0.5);
 
-    rubberband->reset();
+    DBG("TOTAL NUMBER INPUT CHANNELS: " << getTotalNumInputChannels());
+    DBG("TOTAL NUMBER OUTPUT CHANNELS: " << getTotalNumOutputChannels());
+
+    rbBuffer1.setSize(getTotalNumInputChannels(), samplesPerBlock);
+    rbBuffer2.setSize(getTotalNumInputChannels(), samplesPerBlock);
+    rbBuffer3.setSize(getTotalNumInputChannels(), samplesPerBlock);
+
+    // "Dynamic memory": Memory that is allocated while the app is running.
+    rubberband1 = std::make_unique<RubberBandStretcher>(sampleRate,
+        getTotalNumOutputChannels(),
+        RubberBandStretcher::PresetOption::DefaultOptions | RubberBandStretcher::Option::OptionProcessRealTime,
+        1.0,
+        1.25);
+
+    // "Dynamic memory": Memory that is allocated while the app is running.
+    rubberband2 = std::make_unique<RubberBandStretcher>(sampleRate,
+        getTotalNumOutputChannels(),
+        RubberBandStretcher::PresetOption::DefaultOptions | RubberBandStretcher::Option::OptionProcessRealTime,
+        1.0,
+        1.5);
+
+    // "Dynamic memory": Memory that is allocated while the app is running.
+    rubberband3 = std::make_unique<RubberBandStretcher>(sampleRate,
+        getTotalNumOutputChannels(),
+        RubberBandStretcher::PresetOption::DefaultOptions | RubberBandStretcher::Option::OptionProcessRealTime,
+        1.0,
+        1.75);
+
+    rubberband1->reset();
+    rubberband2->reset();
+    rubberband3->reset();
 }
 
 void PrismusAudioProcessor::releaseResources()
@@ -147,57 +171,59 @@ bool PrismusAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 }
 #endif
 
-void PrismusAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void PrismusAudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
-
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
-
-
     /*
     * FROM "Livestream - Implementing a TimeStretching Library (RubberBand)"  by The Audio Programmer
     * https://www.youtube.com/watch?v=XhmM8HZj7aU
     */
 
 
-    auto readPointers = buffer.getArrayOfReadPointers();
-    auto writePointers = buffer.getArrayOfWritePointers();
+    // The number of samples required in order to output.
+    auto bufferSamples = ioBuffer.getNumSamples();
+    auto readPointers = ioBuffer.getArrayOfReadPointers();    // Pointers to the input channels
 
-    rubberband->process(readPointers, buffer.getNumSamples(), false);
+    rbBuffer1.makeCopyOf(ioBuffer);
+    rbBuffer2.makeCopyOf(ioBuffer);
+    rbBuffer3.makeCopyOf(ioBuffer);
+    auto writePointers1 = rbBuffer1.getArrayOfWritePointers();  // Pointers to the output channels
+    auto writePointers2 = rbBuffer2.getArrayOfWritePointers();  // Pointers to the output channels
+    auto writePointers3 = rbBuffer3.getArrayOfWritePointers();  // Pointers to the output channels
 
-    auto samplesAvailable = rubberband->available();
+    rubberband1->process(readPointers, bufferSamples, false);
+    rubberband2->process(readPointers, bufferSamples, false);
+    rubberband3->process(readPointers, bufferSamples, false);
+    auto samplesAvailable1 = rubberband1->available();
+    auto samplesAvailable2 = rubberband2->available();
+    auto samplesAvailable3 = rubberband3->available();
 
-    //DBG("Samples available: " << samplesAvailableFromStretcher);
-
-    if (buffer.getNumSamples() < samplesAvailable)
+    DBG("-----------------------------------------------------------------------");
+    if (samplesAvailable1 >= bufferSamples && samplesAvailable2 >= bufferSamples && samplesAvailable3 >= bufferSamples)
     {
-        auto rbOutput = rubberband->retrieve(writePointers, buffer.getNumSamples());
+        DBG("samplesAvailable1: " << samplesAvailable1 << "samplesAvailable2: " << samplesAvailable2
+            << "samplesAvailable3: " << samplesAvailable3);
+        rubberband1->retrieve(writePointers1, bufferSamples);
+        rubberband2->retrieve(writePointers2, bufferSamples);
+        rubberband3->retrieve(writePointers3, bufferSamples);
 
+        DBG("  -- retrieve --" << "   bufferSamples: " << bufferSamples);
+        samplesAvailable1 = rubberband1->available();
+        samplesAvailable2 = rubberband2->available();
+        samplesAvailable3 = rubberband3->available();
 
+        DBG("samplesAvailable1: " << samplesAvailable1 << "samplesAvailable2: " << samplesAvailable2
+            << "samplesAvailable3: " << samplesAvailable3);
+
+        ioBuffer.applyGain(0, 0, bufferSamples, 0.00);
+        ioBuffer.addFrom(0, 0, rbBuffer1, 0, 0, bufferSamples, 0.35);
+        ioBuffer.addFrom(0, 0, rbBuffer2, 0, 0, bufferSamples, 0.45);
+        ioBuffer.addFrom(0, 0, rbBuffer3, 0, 0, bufferSamples, 0.20);
+        ioBuffer.applyGain(0, 0, bufferSamples, 2.0);
     }
-
+    else
+    {
+        DBG("NOT ENOUGH SAMPLES AVAILABLE");
+    }
 }
 
 //==============================================================================
