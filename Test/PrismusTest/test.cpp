@@ -1,7 +1,21 @@
 #include "pch.h"
 
-#include "../Source/Interval.cpp"
+#include "../../Source/MidiProcessor.h"
+#include "../../Source/Interval.cpp"
 
+// Midiprocessor Tests
+//-----------------------------------------------------------------------------
+
+TEST(Note, EqualNoteTest)
+{
+	Note note1 = Note();
+	Note note2 = Note(60);
+
+	ASSERT_EQ(note1, note2);
+}
+
+// Interval Tests
+//-----------------------------------------------------------------------------
 TEST(Interval, InvalidRatio1) {
 	Interval interval = Interval(0, 1);	// Not a valid interval. Should be changed to default values
 

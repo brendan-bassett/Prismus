@@ -2,4 +2,11 @@ Extras/*
 !Extras/notes.txt
 Builds/
 Demos/
-Test/x64/
+Test/*
+!Test/PrismusTest
+Test/PrismusTest/x64/
+Test/PrismusTest/packages.config
+Test/PrismusTest/pch.cpp
+Test/PrismusTest/pch.h
+Test/PrismusTest/PrismusTest.vcxproj
+Test/PrismusTest/PrismusTest.vcxproj.user

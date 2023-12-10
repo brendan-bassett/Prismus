@@ -13,7 +13,7 @@
 #include <JuceHeader.h>
 #include <forward_list>
 
-#include "Interval.h"
+#include "NoteStructure.h"
 
 /// @brief Displays chords in relative intonation.
 class Lens : public juce::Component

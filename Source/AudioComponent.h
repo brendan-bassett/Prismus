@@ -11,7 +11,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-//===================================================================================================================
+//==============================================================================
 
 /// @brief Displays chords in relative intonation.
 class AudioComponent : public juce::Component, public juce::ChangeListener
@@ -22,12 +22,6 @@ public:
 
     AudioComponent() : state(Stopped)
     {
-        levelSlider.setRange(0.0, 0.05);
-        levelSlider.setTextBoxStyle(juce::Slider::TextBoxRight, false, 40, 20);
-        levelLabel.setText("Noise Level", juce::dontSendNotification);
-
-        addAndMakeVisible(levelSlider);
-        addAndMakeVisible(levelLabel);
 
         addAndMakeVisible(&openButton);
         openButton.setButtonText("Open...");
@@ -70,12 +64,11 @@ public:
 
     void resized() override
     {
-        levelLabel.setBounds(0, 10, 70, 20);
-        levelSlider.setBounds(80, 10, getWidth() - 90, 20);
+        auto area = getLocalBounds().reduced(10);
 
-        openButton.setBounds(10, 110, getWidth() - 20, 20);
-        playButton.setBounds(10, 140, getWidth() - 20, 20);
-        stopButton.setBounds(10, 170, getWidth() - 20, 20);
+        openButton.setBounds(area.removeFromTop(30));
+        playButton.setBounds(area.removeFromTop(40).withTrimmedTop(10));
+        stopButton.setBounds(area.removeFromTop(40).withTrimmedTop(10));
     }
 
 private:
@@ -178,10 +171,6 @@ private:
     }
 
     //-------------------------------------------------------------------------
-
-    juce::Random random;
-    juce::Slider levelSlider;
-    juce::Label levelLabel;
 
     juce::TextButton openButton;
     juce::TextButton playButton;

@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin editor.
+    The MAIN WINDOW for editing the plugin functionality.
 
   ==============================================================================
 */
@@ -14,9 +14,11 @@
 PrismusAudioProcessorEditor::PrismusAudioProcessorEditor (PrismusAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p)
 {
-    setSize(480, 800);
+    //setTopLeftPosition(200, 200);
+    setSize(720, 800);
     addAndMakeVisible(lens);
     addAndMakeVisible(audioComponent);
+    addAndMakeVisible(midiProcessor);
 }
 
 PrismusAudioProcessorEditor::~PrismusAudioProcessorEditor()
@@ -25,6 +27,10 @@ PrismusAudioProcessorEditor::~PrismusAudioProcessorEditor()
 
 void PrismusAudioProcessorEditor::resized()
 {
-    lens.setBounds(0, 0, getWidth() - 240, getHeight());
-    audioComponent.setBounds(240, 0, getWidth() - 240, getHeight());
+    auto area = getLocalBounds();
+    auto rightArea = area.removeFromRight(480);
+
+    lens.setBounds(area);
+    audioComponent.setBounds(rightArea.removeFromTop(160));
+    midiProcessor.setBounds(rightArea);
 }
