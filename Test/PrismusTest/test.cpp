@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "../../Source/MidiProcessor.h"
+#include "../../Source/NoteStructure.h"
 #include "../../Source/Interval.cpp"
 
 // Midiprocessor Tests

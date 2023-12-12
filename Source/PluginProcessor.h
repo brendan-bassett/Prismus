@@ -9,9 +9,11 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <forward_list> as list;
 #include "rubberband/RubberBandStretcher.h"
 
 using RubberBand::RubberBandStretcher;
+using namespace std;
 
 //==============================================================================
 /**
@@ -62,13 +64,12 @@ public:
 private:
     //==============================================================================
 
-    std::unique_ptr<RubberBandStretcher> rubberband1;
-    std::unique_ptr<RubberBandStretcher> rubberband2;
-    std::unique_ptr<RubberBandStretcher> rubberband3;
+    const int maxNotes = 5;
 
-    juce::AudioBuffer<float> rbBuffer1;
-    juce::AudioBuffer<float> rbBuffer2;
-    juce::AudioBuffer<float> rbBuffer3;
+    list<RubberBandStretcher> rubberbandList;
+    list<juce::AudioBuffer<float>> rbBufferList;
+    list<float* const*> writePointersList;
+    list<int> samplesAvailableList;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismusAudioProcessor)
 };
