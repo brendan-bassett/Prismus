@@ -11,14 +11,14 @@
 #pragma once
 
 #include <JuceHeader.h>
-//==============================================================================
 
-/// @brief Displays chords in relative intonation.
 class AudioComponent : public juce::Component, public juce::ChangeListener
 {
 
 public:
     //=========================================================================
+
+    //-- Constructors & Destructors -------------------------------------------
 
     AudioComponent() : state(Stopped)
     {
@@ -47,7 +47,7 @@ public:
     {
     }
 
-    //-------------------------------------------------------------------------
+    //-- Instance Functions ---------------------------------------------------
 
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
     {
@@ -74,6 +74,8 @@ public:
 private:
     //=========================================================================
 
+    //-- Subclasses & Enums ---------------------------------------------------
+
     enum TransportState
     {
         Paused,
@@ -84,7 +86,7 @@ private:
         Stopping
     };
 
-    //-------------------------------------------------------------------------
+    //-- Instance Functions ---------------------------------------------------
 
     void changeState(TransportState newState)
     {
@@ -170,7 +172,7 @@ private:
             changeState(Stopping);
     }
 
-    //-------------------------------------------------------------------------
+    //-- Instance Variables ---------------------------------------------------
 
     juce::TextButton openButton;
     juce::TextButton playButton;
@@ -182,6 +184,8 @@ private:
 
     std::unique_ptr<juce::FileChooser> chooser;
     std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+
+    //-------------------------------------------------------------------------
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AudioComponent)
 };

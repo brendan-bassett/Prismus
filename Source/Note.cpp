@@ -3,7 +3,7 @@
 
     Note.cpp
     Created: 13 Dec 2023 6:20:41pm
-    Author:  bbass
+    Author:  Brendan D Bassett
 
   ==============================================================================
 */

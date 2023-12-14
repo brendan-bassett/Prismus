@@ -1,17 +1,16 @@
 /*
-  =================================================================================================================
+  ==============================================================================
 
-    PluginProcessor.cpp
+    AudioProcessor.cpp
     Created: 16 Aug 2023 10:00:12pm
     Author:  Brendan D Bassett
 
-  =================================================================================================================
+  ==============================================================================
 */
 
 #pragma once
 
-#include <iostream>
-#include <forward_list> as list;
+#include <JuceHeader.h>
 
 #include "AudioProcessor.h"
 #include "PluginEditor.h"
@@ -23,11 +22,14 @@
 using RubberBand::RubberBandStretcher;
 using RubberBand::RingBuffer;
 
-using namespace std;
 
-//==============================================================================
+//PUBLIC
+//=============================================================================
+
+//-- Constructors & Destructors -----------------------------------------------
+
 AudioProcessor::AudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
+    #ifndef JucePlugin_PreferredChannelConfigurations
      : juce::AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
@@ -36,7 +38,7 @@ AudioProcessor::AudioProcessor()
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
                        )
-#endif
+    #endif
 {
 }
 
@@ -44,12 +46,16 @@ AudioProcessor::~AudioProcessor()
 {
 }
 
-//==============================================================================
+//-- Instance Functions -------------------------------------------------------
 
 void AudioProcessor::changeListenerCallback(juce::ChangeBroadcaster* source)
-{}
+{
+    if (midiProcessor == nullptr) return;
+    if (source == nullptr) return;
 
-//==============================================================================
+    if (typeid(source) == typeid(MidiProcessor))
+        updateChord(midiProcessor->getActiveChord());
+}
 
 void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
@@ -57,59 +63,43 @@ void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     DBG("TOTAL NUMBER INPUT CHANNELS: " << getTotalNumInputChannels());
     DBG("TOTAL NUMBER OUTPUT CHANNELS: " << getTotalNumOutputChannels());
 
-    for (int i = 0; i < maxNotes; ++i)
+    for (int i{ 0 }; i < maxPolyphony; ++i)
     {
-        juce::AudioBuffer<float> rbBuffer;
-        rbBuffer.setSize(getTotalNumInputChannels(), samplesPerBlock);
-        rbBufferList.push_back(rbBuffer);
+        // It is assumed that the lowest notes on the keyboard are reserved for indicating the root of a chord. So we
+        // map the unused buffers to these lowest notes.
+        rbBufferMap[i] = juce::AudioBuffer<float>(getTotalNumInputChannels(), samplesPerBlock);
 
-        // "Dynamic memory": Memory that is allocated while the app is running.
-
-        RubberBandStretcher rubberband = RubberBandStretcher(sampleRate,
+        rubberbandMap[i] = &RubberBandStretcher(sampleRate,
             getTotalNumOutputChannels(),
             RubberBandStretcher::PresetOption::DefaultOptions | RubberBandStretcher::Option::OptionProcessRealTime,
             1.0,
             1.0);
-        rubberband.reset();
-        rubberbandList.push_back(rubberband);
     }
-}
-
-void AudioProcessor::releaseResources()
-{
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 void AudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
 {
-    /*
-    * FROM "Livestream - Implementing a TimeStretching Library (RubberBand)"  by The Audio Programmer
-    * https://www.youtube.com/watch?v=XhmM8HZj7aU
-    */
+    int bufferSamples{ ioBuffer.getNumSamples() };
+    auto readPointers{ ioBuffer.getArrayOfReadPointers() };    // Pointers to the input channels
 
-    // The number of samples required in order to output.
-    auto bufferSamples = ioBuffer.getNumSamples();
-    auto readPointers = ioBuffer.getArrayOfReadPointers();    // Pointers to the input channels
-
-    for (auto rbBuffer = rbBufferList.begin(); rbBuffer != rbBufferList.end(); ++rbBuffer)
+    for (auto it{ rbBufferMap.begin() }; it != rbBufferMap.end(); ++it)
     {
-        rbBuffer->makeCopyOf(ioBuffer);
-        writePointersList.push_back(rbBuffer->getArrayOfWritePointers());
+        it->second.makeCopyOf(ioBuffer);
+        writePointersList.push_front(it->second.getArrayOfWritePointers());
     }
 
-    for (auto rb = rubberbandList.begin(); rb != rubberbandList.end(); ++rb)
+    for (auto it{ rubberbandMap.begin() }; it != rubberbandMap.end(); ++it)
     {
-        RubberBandStretcher &rubberband = *rb;
-        rubberband.process(readPointers, bufferSamples, false);
-        samplesAvailableList.push_back(rubberband.available());
+        RubberBandStretcher* rubberband{ it->second };
+        rubberband->process(readPointers, bufferSamples, false);
+        samplesAvailableList.push_front(rubberband->available());
     }
 
     DBG("/n-----------------------------------------------------------------------/n");
 
-    bool proceedWithBlock = true;
-    int i = 1;
-    for (auto sa = samplesAvailableList.begin(); sa != samplesAvailableList.end(); ++sa)
+    bool proceedWithBlock{ true };
+    int i{ 1 };
+    for (auto sa{ samplesAvailableList.begin() }; sa != samplesAvailableList.end(); ++sa)
     {
         if (*sa < bufferSamples)
         {
@@ -120,24 +110,27 @@ void AudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::Mid
         {
             DBG("Rubberband " << i << " samples available: " << *sa);
         }
+
+        ++i;
     }
 
     if (proceedWithBlock)
     {
         DBG("/nRetrieve " << bufferSamples << " samples from each rubberband instance.");
 
-        auto wp = writePointersList.begin();
-        for (auto rb = rubberbandList.begin(); rb != rubberbandList.end(); ++rb)
+        auto wp{ writePointersList.begin() };
+        for (auto it = rubberbandMap.begin(); it != rubberbandMap.end(); ++it)
         {
-            rb->retrieve(*wp, bufferSamples);
+            RubberBandStretcher* rubberband{ it->second };
+            rubberband->retrieve(*wp, bufferSamples);
             ++wp;
         }
 
         ioBuffer.applyGain(0, 0, bufferSamples, 0.00);
 
-        for (auto rbBuffer = rbBufferList.begin(); rbBuffer != rbBufferList.end(); ++rbBuffer)
+        for (auto it = rbBufferMap.begin(); it != rbBufferMap.end(); ++it)
         {
-            ioBuffer.addFrom(0, 0, *rbBuffer, 0, 0, bufferSamples, 1/(float)maxNotes);
+            it->second.addFrom(0, 0, it->second, 0, 0, bufferSamples, 1/(float)maxPolyphony);
         }
 
         ioBuffer.applyGain(0, 0, bufferSamples, 2.0);  // TODO implement master gain slider to control this.
@@ -151,15 +144,108 @@ void AudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::Mid
     samplesAvailableList.clear();
 }
 
-//==============================================================================
+void AudioProcessor::releaseResources()
+{
+    // When playback stops, you can use this as an opportunity to free up any
+    // spare memory, etc.
+}
+
+void AudioProcessor::updateChord(Chord& chord)
+{
+    std::forward_list<int> midiNoteNumber { chord.getMidiNoteNumbers() };
+    for (auto it{ rubberbandMap.begin() }; it != rubberbandMap.end(); ++it)
+    {
+        // TODO: Separate inactive instances of RubberBand from active ones
+        // TODO: Combine RubberBand instances and their corresponding AudioBuffers and samplesAvailable
+    }
+}
+
+//-----------------------------------------------------------------------------
+
+bool AudioProcessor::acceptsMidi() const
+{
+    #if JucePlugin_WantsMidiInput
+    return true;
+    #else
+    return false;
+    #endif
+}
+
+void AudioProcessor::changeProgramName(int index, const juce::String& newName)
+{
+}
+
+juce::AudioProcessorEditor* AudioProcessor::createEditor()
+{
+    return new PluginEditor(*this);
+}
+
+int AudioProcessor::getCurrentProgram()
+{
+    return 0;
+}
+
+const juce::String AudioProcessor::getName() const
+{
+    return JucePlugin_Name;
+}
+
+int AudioProcessor::getNumPrograms()
+{
+    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+    // so this should be at least 1, even if you're not really implementing programs.
+}
+
+const juce::String AudioProcessor::getProgramName(int index)
+{
+    return {};
+}
+
+double AudioProcessor::getTailLengthSeconds() const
+{
+    return 0.0;
+}
+
+bool AudioProcessor::hasEditor() const
+{
+    return true;
+}
+
+bool AudioProcessor::isMidiEffect() const
+{
+    #if JucePlugin_IsMidiEffect
+    return true;
+    #else
+    return false;
+    #endif
+}
+
+bool AudioProcessor::producesMidi() const
+{
+    #if JucePlugin_ProducesMidiOutput
+    return true;
+    #else
+    return false;
+    #endif
+}
+
+void AudioProcessor::setCurrentProgram(int index)
+{
+}
+
+void AudioProcessor::setMidiProcessor(MidiProcessor* mp)
+{
+    midiProcessor = mp;
+}
 
 #ifndef JucePlugin_PreferredChannelConfigurations
 bool AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-#if JucePlugin_IsMidiEffect
+    #if JucePlugin_IsMidiEffect
     juce::ignoreUnused(layouts);
     return true;
-#else
+
+    #else
     // This is the place where you check if the layout is supported.
     // In this template code we only support mono or stereo.
     // Some plugin hosts, such as certain GarageBand versions, will only
@@ -169,88 +255,18 @@ bool AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
         return false;
 
     // This checks if the input layout matches the output layout
-#if ! JucePlugin_IsSynth
+    #if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-#endif
+    #endif
 
     return true;
-#endif
+    #endif
 }
 #endif
 
-bool AudioProcessor::hasEditor() const
-{
-    return true;
-}
-
-juce::AudioProcessorEditor* AudioProcessor::createEditor()
-{
-    return new PluginEditor (*this);
-}
-
-const juce::String AudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
-
-bool AudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool AudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool AudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-    return true;
-#else
-    return false;
-#endif
-}
-
-double AudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int AudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-    // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int AudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void AudioProcessor::setCurrentProgram(int index)
-{
-}
-
-const juce::String AudioProcessor::getProgramName(int index)
-{
-    return {};
-}
-
-void AudioProcessor::changeProgramName(int index, const juce::String& newName)
-{
-}
-
-//==============================================================================
+//-----------------------------------------------------------------------------
+// Save State Functions
 
 void AudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
@@ -265,9 +281,10 @@ void AudioProcessor::setStateInformation (const void* data, int sizeInBytes)
     // whose contents will have been created by the getStateInformation() call.
 }
 
+// NON-MEMBER
 //==============================================================================
 
-// This creates new instances of the plugin..
+// "MAIN" function. Initializes the VST plugin processor
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new AudioProcessor();

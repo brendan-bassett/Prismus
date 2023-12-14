@@ -1,16 +1,21 @@
 /*
-  ==============================================================================
+  =============================================================================
 
     Chord.cpp
     Created: 13 Dec 2023 6:20:53pm
-    Author:  bbass
+    Author:  Brendan D Bassett
 
-  ==============================================================================
+  =============================================================================
 */
+
+#include <JuceHeader.h>
 
 #include "Chord.h"
 
-using namespace std;
+// PUBLIC
+//=============================================================================
+
+//-- Constructors & Destructors -----------------------------------------------
 
 Chord::Chord(int midiRoot) // Default to Middle C (C3)
 {
@@ -18,7 +23,7 @@ Chord::Chord(int midiRoot) // Default to Middle C (C3)
 	updateMidiMap();
 }
 
-//------------------------------------------------------------------------------
+//-- Instance Functions -------------------------------------------------------
 
 void Chord::addNote(int midiNoteNumber)
 {
@@ -26,19 +31,19 @@ void Chord::addNote(int midiNoteNumber)
 
 	if (midiNoteNumber <= Chord::rootLimit)
 	{
-		cout << "Midi note number " << midiNoteNumber
+		std::cout << "Midi note number " << midiNoteNumber
 			<< " Is too low to be a note. It must be above " << rootLimit
-			<< " or else it is a root. Cannot add it to the chord." << endl;
+			<< " or else it is a root. Cannot add it to the chord." << std::endl;
 		return;
 	}
 
-	Interval interval = midiMap[midiNoteNumber].copy();
-	Note note = Note(midiNoteNumber, interval);
+	Interval interval{ midiMap[midiNoteNumber] };
+	Note note{ midiNoteNumber, interval };
 
 	// Ensure the note is not already in the chord before adding it.
-	for (auto n = noteList.begin(); n != noteList.end(); ++n)
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
 		if (n->midiNoteNumber == midiNoteNumber) {
-			cout << "Note number " << midiNoteNumber << " is already in the chord! Cannot add it.";
+			std::cout << "Note number " << midiNoteNumber << " is already in the chord! Cannot add it.";
 			return;
 		}
 
@@ -53,20 +58,22 @@ void Chord::removeNote(int midiNoteNumber)
 
 	if (midiNoteNumber <= Chord::rootLimit)
 	{
-		cout << "Midi note number " << midiNoteNumber
+		std::cout << "Midi note number " << midiNoteNumber
 			<< " Is too low to be a note. It must be above " << rootLimit
-			<< " or else it is a root. Cannot remove it from the chord." << endl;
+			<< " or else it is a root. Cannot remove it from the chord." << std::endl;
 		return;
 	}
 
 	// Find the corresponding note in the chord, then remove it.
-	for (auto n = noteList.begin(); n != noteList.end(); ++n)
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
+	{
 		if (n->midiNoteNumber == midiNoteNumber) {
 			noteList.remove(*n);
 			return;
 		}
+	}
 
-	cout << "Note number " << midiNoteNumber << " does not exist in the chord! Cannot remove it.";
+	std::cout << "Note number " << midiNoteNumber << " does not exist in the chord! Cannot remove it.";
 
 	rwLock.exitWrite();
 }
@@ -75,29 +82,68 @@ float Chord::getRootRelP()
 {
 	rwLock.enterRead();
 
-	float rrp = root.interval.getRelP();
+	float rrp{ root.interval.getRelP() };
 
 	rwLock.exitRead();
 
 	return rrp;
 }
 
-list<float>& Chord::getNotesRelP()
+std::forward_list<int> Chord::getMidiNoteNumbers()
 {
 	rwLock.enterRead();
 
-	float rrp = getRootRelP();
-	list<float> relPList;
+	std::forward_list<int> midiNoteList;
 
-	for (auto n = noteList.begin(); n != noteList.end(); ++n)
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
+		midiNoteList.push_front(n->midiNoteNumber);
+
+	rwLock.exitRead();
+
+	return midiNoteList;
+}
+
+std::forward_list<float> Chord::getNotesRelP()
+{
+	rwLock.enterRead();
+
+	float rrp{ getRootRelP() };
+	std::forward_list<float> relPList;
+
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
 	{
-		float nrp = rrp + n->interval.getRelP();
-		relPList.push_back(nrp);
+		float nrp{ rrp + n->interval.getRelP() };
+		relPList.push_front(nrp);
 	}
 
 	rwLock.exitRead();
 
 	return relPList;
+}
+
+std::forward_list<float> Chord::getNotesMultipliers()
+{
+	rwLock.enterRead();
+
+	std::forward_list<float> multiList;
+
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
+	{
+		float nrp{ n->interval.getAbsPMultiplier() };
+		multiList.push_front(nrp);
+	}
+
+	rwLock.exitRead();
+
+	return multiList;
+}
+
+bool Chord::hasNote(int midiNoteNumber)
+{
+	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
+		if (n->midiNoteNumber == midiNoteNumber) return true;
+
+	return false;
 }
 
 void Chord::updateRoot(int r)
@@ -106,8 +152,8 @@ void Chord::updateRoot(int r)
 
 	if (r > Chord::rootLimit)
 	{
-		cout << "Root number " << r
-			<< " Is too high to be a valid root. Must be MIDI note number 47 (B2) or below." << endl;
+		std::cout << "Root number " << r
+			<< " Is too high to be a valid root. Must be MIDI note number 47 (B2) or below." << std::endl;
 		return;
 	}
 
@@ -117,19 +163,22 @@ void Chord::updateRoot(int r)
 	rwLock.exitWrite();
 }
 
-//-----------------------------------------------------------------------------
+// PRIVATE
+//=============================================================================
+
+//-- Instance Functions -------------------------------------------------------
 
 void Chord::updateMidiMap()
 {
 	// Map the intervals as indicated by the standard interval map, centered around the root.
 
-	// Find the starting point of the root in the 
-	int translation = root.midiNoteNumber - rootLimit + 1;
-	int octaves = -(translation / 12);
-	translation = translation % 12;
+	// DO NOT READ/WRITE LOCK. Private function is only accessed from within member functions already implementing lock.
 
-	// Above the root
-	for (int i = rootLimit + 1, int m = translation; i <= 88; ++i, ++m)
+	int translation{ root.midiNoteNumber - rootLimit + 1 };
+	int octaves{ - (translation / 12)};
+	translation %= 12;			// Remove octaves from translation.
+
+	for (int i{ rootLimit + 1 }, m{ translation }; i <= 88; ++i, ++m)
 	{
 		if (m == 12)
 		{
@@ -137,18 +186,19 @@ void Chord::updateMidiMap()
 			++octaves;
 		}
 
-		Interval interval = standardIntervalMap[m].copy();
+		Interval interval{ standardIntervalMap[m]};		// This automatically copies the Interval
 		interval.translateOctaves(octaves);
 		midiMap[i] = interval;
 	}
-
 }
 
-//-----------------------------------------------------------------------------
+// NON-MEMBER
+//=============================================================================
 
-map<int, Interval> initStandardIntervalMap()
+std::map<int, Interval>& initStandardIntervalMap()
 {
-	map<int, Interval> m;
+	std::map<int, Interval> m;
+
 	m[0] = Interval(1, 1); // Unison
 	m[1] = Interval(0, 0); // Minor Second - NULL INTERVAL
 	m[2] = Interval(9, 8); // Major Second
@@ -164,4 +214,5 @@ map<int, Interval> initStandardIntervalMap()
 
 	return m;
 }
-map<int, Interval> Chord::standardIntervalMap(initStandardIntervalMap());
+
+std::map<int, Interval>& Chord::standardIntervalMap(initStandardIntervalMap());

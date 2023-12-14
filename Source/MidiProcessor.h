@@ -11,13 +11,11 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include <iostream>
 
 #include "AudioProcessor.h"
 #include "Chord.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 
 class MidiProcessor : public juce::Component,
                       public juce::ChangeBroadcaster,
@@ -26,22 +24,21 @@ class MidiProcessor : public juce::Component,
 {
 
 public:
-    //==============================================================================
+    //-- Constructors & Destructors -------------------------------------------
 
     MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& pluginEditor);
-
     ~MidiProcessor() override;
 
-    //-------------------------------------------------------------------------
+    //-- Instance Variables ---------------------------------------------------
 
     void paint(juce::Graphics& g) override;
-
     void resized() override;
-
     Chord& getActiveChord();
 
 private:
-    //==============================================================================
+    //=========================================================================
+
+    //-- Subclasses & Enums ---------------------------------------------------
 
     class IncomingMessageCallback : public juce::CallbackMessage
     {
@@ -62,7 +59,7 @@ private:
         juce::String source;
     };
 
-    //-------------------------------------------------------------------------
+    //-- Instance Functions ---------------------------------------------------
 
     void addMessageToList(const juce::MidiMessage& message, const juce::String& source);
 
@@ -78,7 +75,7 @@ private:
 
     void setMidiInput(int index);
 
-    //-------------------------------------------------------------------------
+    //-- Instance Variables ---------------------------------------------------
 
     AudioProcessor& audioProcessor;
 
@@ -95,6 +92,8 @@ private:
     double startTime;
 
     Chord activeChord;
+
+    //-------------------------------------------------------------------------
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MidiProcessor)
 };

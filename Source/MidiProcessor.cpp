@@ -3,12 +3,19 @@
 
     MidiProcessor.cpp
     Created: 13 Dec 2023 6:48:38pm
-    Author:  bbass
+    Author:  Brendan D Bassett
 
   ==============================================================================
 */
 
+#include <JuceHeader.h>
+
 #include "MidiProcessor.h"
+
+// PUBLIC
+//=============================================================================
+
+//-- Constructors & Destructors -----------------------------------------------
 
 MidiProcessor::MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& pluginEditor)
     : audioProcessor(audioProcessor),
@@ -24,7 +31,7 @@ MidiProcessor::MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& plugi
     addAndMakeVisible(midiInputListLabel);
 
     midiInputList.setTextWhenNoChoicesAvailable("No MIDI Inputs Enabled");
-    auto midiInputs = juce::MidiInput::getAvailableDevices();
+    auto midiInputs{ juce::MidiInput::getAvailableDevices() };
 
     juce::StringArray midiInputNames;
 
@@ -67,11 +74,11 @@ MidiProcessor::MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& plugi
 MidiProcessor::~MidiProcessor()
 {
     keyboardState.removeListener(this);
-    auto activeMidiDevice = juce::MidiInput::getAvailableDevices()[midiInputList.getSelectedItemIndex()].identifier;
+    auto activeMidiDevice{ juce::MidiInput::getAvailableDevices()[midiInputList.getSelectedItemIndex()].identifier };
     deviceManager.removeMidiInputDeviceCallback(activeMidiDevice, this);
 }
 
-//-------------------------------------------------------------------------
+//-- Instance Functions -------------------------------------------------------
 
 void MidiProcessor::paint(juce::Graphics& g)
 {
@@ -96,26 +103,26 @@ Chord& MidiProcessor::getActiveChord()
 
 void MidiProcessor::addMessageToList(const juce::MidiMessage& message, const juce::String& source)
 {
-    auto time = message.getTimeStamp() - startTime;
+    double time{ message.getTimeStamp() - startTime };
 
-    auto hours = ((int)(time / 3600.0)) % 24;
-    auto minutes = ((int)(time / 60.0)) % 60;
-    auto seconds = ((int)time) % 60;
-    auto millis = ((int)(time * 1000.0)) % 1000;
+    int hours{ ((int)(time / 3600.0)) % 24 };
+    int minutes = ((int)(time / 60.0)) % 60;
+    int seconds = ((int)time) % 60;
+    int millis = ((int)(time * 1000.0)) % 1000;
 
-    auto timecode = juce::String::formatted("%02d:%02d:%02d.%03d",
+    juce::String timecode { juce::String::formatted("%02d:%02d:%02d.%03d",
         hours,
         minutes,
         seconds,
-        millis);
+        millis) };
 
-    juce::String midiMessageString(timecode + "  -  " + message.getDescription() + " (" + source + ")");
+    juce::String midiMessageString{ timecode + "  -  " + message.getDescription() + " (" + source + ")" };
     logMessage(midiMessageString);
 }
 
 void MidiProcessor::handleIncomingMidiMessage(juce::MidiInput* source, const juce::MidiMessage& message)
 {
-    const juce::ScopedValueSetter<bool> scopedInputFlag(isAddingFromMidiInput, true);
+    const juce::ScopedValueSetter<bool> scopedInputFlag{ isAddingFromMidiInput, true };
     keyboardState.processNextMidiEvent(message);
     postMessageToList(message, source->getName());
 }
@@ -124,7 +131,7 @@ void MidiProcessor::handleNoteOn(juce::MidiKeyboardState*, int midiChannel, int 
 {
     if (!isAddingFromMidiInput)
     {
-        auto m = juce::MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity);
+        auto m{ juce::MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity) };
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
         postMessageToList(m, "On-Screen Keyboard");
 
@@ -141,7 +148,7 @@ void MidiProcessor::handleNoteOff(juce::MidiKeyboardState*, int midiChannel, int
 {
     if (!isAddingFromMidiInput)
     {
-        auto m = juce::MidiMessage::noteOff(midiChannel, midiNoteNumber);
+        auto m{ juce::MidiMessage::noteOff(midiChannel, midiNoteNumber) };
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
         postMessageToList(m, "On-Screen Keyboard");
 

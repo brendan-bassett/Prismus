@@ -1,11 +1,11 @@
 /*
-  =================================================================================================================
+  ==============================================================================
 
     PluginProcessor.cpp
     Created: 16 Aug 2023 10:00:12pm
     Author:  Brendan D Bassett
 
-  =================================================================================================================
+  ==============================================================================
 */
 
 #pragma once
@@ -22,22 +22,26 @@ class PluginEditor  : public juce::AudioProcessorEditor,
 {
 
 public:
-    //==============================================================================
+    //=========================================================================
 
-    PluginEditor (AudioProcessor&);
+    //-- Constructors & Destructors -------------------------------------------
+
+    PluginEditor (AudioProcessor& audioProcessor);
     ~PluginEditor() override;
 
-    void resized() override;
+    //-- Instance Functions ---------------------------------------------------
 
+    void resized() override;
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:
-    //==============================================================================
+    //=========================================================================
+
+    //-- Instance Variables ---------------------------------------------------
 
     AudioProcessor& audioProcessor;
     AudioComponent audioComponent;
     MidiProcessor midiProcessor;
     Lens lens;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

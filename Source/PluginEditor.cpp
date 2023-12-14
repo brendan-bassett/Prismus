@@ -1,21 +1,29 @@
 /*
   ==============================================================================
 
-    The MAIN WINDOW for editing the plugin functionality.
+    PluginEditor.cpp
+    Created: 16 Aug 2023 10:00:12pm
+    Author:  Brendan D Bassett
 
   ==============================================================================
 */
 
 #pragma once
 
+#include <JuceHeader.h>
+
 #include "PluginEditor.h"
 #include "Chord.h"
 
-//==============================================================================
+// PUBLIC
+//=============================================================================
+
+//-- Constructors & Destructors -----------------------------------------------
+
 PluginEditor::PluginEditor (AudioProcessor& p) : AudioProcessorEditor (&p),
                                                     audioProcessor (p), 
                                                     midiProcessor(p, this),
-                                                    lens(&midiProcessor.getActiveChord())
+                                                    lens(midiProcessor.getActiveChord())
 {
     setSize(720, 800);
     addAndMakeVisible(audioComponent);
@@ -26,6 +34,8 @@ PluginEditor::PluginEditor (AudioProcessor& p) : AudioProcessorEditor (&p),
 PluginEditor::~PluginEditor()
 {
 }
+
+//-- Instance Functions -------------------------------------------------------
 
 void PluginEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
