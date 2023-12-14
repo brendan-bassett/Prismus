@@ -22,10 +22,8 @@ using namespace std;
 
 // =====================================================================================================================
 
-Lens::Lens(Chord* c)
-{
-    chord = c;
-}
+Lens::Lens(Chord& chord): chord(chord)
+{}
 
 // =====================================================================================================================
 
@@ -51,17 +49,16 @@ void Lens::resized()
 
 void Lens::drawChords(juce::Graphics& g)
 {
+    list<float>& notesRelP = chord.getNotesRelP();
 
-    for (Interval note : chordList)
+    for (auto nrp = notesRelP.begin(); nrp != notesRelP.end(); ++nrp)
     {
-        float noteAbsRelP = note.getRelP() + rootInterval.getRelP();
-
-        if (noteAbsRelP > topRelP || noteAbsRelP < bottomRelP)
+        if (*nrp > topRelP || *nrp < bottomRelP)
         {
             continue;
         }
 
-        float noteY = relPToPx(noteAbsRelP);
+        float noteY = relPToPx(*nrp);
 
         juce::Rectangle noteRect = juce::Rectangle(LEFT_MARGIN + 50.f,
             noteY - 4.f,
@@ -71,7 +68,7 @@ void Lens::drawChords(juce::Graphics& g)
         g.drawRect(noteRect, 1.0f);
 
         Interval harmonic = Interval(2, 1);
-        float harmonicY = relPToPx(noteAbsRelP + harmonic.getRelP());
+        float harmonicY = relPToPx(*nrp + harmonic.getRelP());
         float harmonicInsetX = 0.0f;
 
         for (int h = 2; harmonicY > 0; h++)
@@ -83,7 +80,7 @@ void Lens::drawChords(juce::Graphics& g)
                 harmonicY, 2.0f);
 
             harmonic = Interval(h + 1, 1);
-            harmonicY = relPToPx(noteAbsRelP + harmonic.getRelP());
+            harmonicY = relPToPx(*nrp + harmonic.getRelP());
 
         }
 

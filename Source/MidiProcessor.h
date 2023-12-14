@@ -15,6 +15,7 @@
 
 #include "AudioProcessor.h"
 #include "Chord.h"
+#include "PluginEditor.h"
 
 //==============================================================================
 
@@ -27,7 +28,7 @@ class MidiProcessor : public juce::Component,
 public:
     //==============================================================================
 
-    MidiProcessor(AudioProcessor& audioProcessor);
+    MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& pluginEditor);
 
     ~MidiProcessor() override;
 
@@ -37,9 +38,7 @@ public:
 
     void resized() override;
 
-    //-------------------------------------------------------------------------
-
-    Chord chord;
+    Chord& getActiveChord();
 
 private:
     //==============================================================================
@@ -79,7 +78,7 @@ private:
 
     void setMidiInput(int index);
 
-    //==============================================================================
+    //-------------------------------------------------------------------------
 
     AudioProcessor& audioProcessor;
 
@@ -94,6 +93,8 @@ private:
 
     juce::TextEditor midiMessagesBox;
     double startTime;
+
+    Chord activeChord;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MidiProcessor)
 };

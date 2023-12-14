@@ -14,8 +14,8 @@
 //==============================================================================
 PluginEditor::PluginEditor (AudioProcessor& p) : AudioProcessorEditor (&p),
                                                     audioProcessor (p), 
-                                                    midiProcessor(p),
-                                                    lens(&midiProcessor.chord)
+                                                    midiProcessor(p, this),
+                                                    lens(&midiProcessor.getActiveChord())
 {
     setSize(720, 800);
     addAndMakeVisible(audioComponent);
@@ -30,7 +30,7 @@ PluginEditor::~PluginEditor()
 void PluginEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
 {
     if (typeid(source) == typeid(MidiProcessor))
-        &midiProcessor.chord;
+        lens.repaint();
 }
 
 void PluginEditor::resized()

@@ -20,17 +20,15 @@ class Lens : public juce::Component
 public:
     //==================================================================================================================
 
-    Lens(Chord* chord);
+    Lens(Chord& chord);
 
     //------------------------------------------------------------------------------------------------------------------
 
-    /// @copydoc Component::paint()
     void paint(juce::Graphics& g) override;
 
-    /// @copydoc Component::paint()
     void resized() override;
 
-    Chord* chord;
+    Chord& chord;
 
 private:
     //==================================================================================================================
@@ -49,13 +47,9 @@ private:
 
     Interval rootInterval = Interval(3, 2);
 
-    //------------------------------------------------------------------------------------------------------------------
-
     float topRelP = 5.0f;
     float bottomRelP = -2.2f;
     float pxPerRelP = 0.0f;
-
-    std::forward_list<Interval> chordList = std::forward_list<Interval>();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Lens)
 

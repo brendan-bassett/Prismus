@@ -30,7 +30,7 @@ public:
 
     float getRootRelP();
 
-    list<float> getNotesRelP();
+    list<float>& getNotesRelP();
 
     void removeNote(int midiNoteNumber);
 
@@ -41,6 +41,8 @@ public:
 private:
 
     void updateMidiMap();
+
+    juce::ReadWriteLock rwLock;
 
     map<int, Interval> midiMap;
 

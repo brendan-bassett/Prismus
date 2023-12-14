@@ -22,6 +22,8 @@ Chord::Chord(int midiRoot) // Default to Middle C (C3)
 
 void Chord::addNote(int midiNoteNumber)
 {
+	rwLock.enterWrite();
+
 	if (midiNoteNumber <= Chord::rootLimit)
 	{
 		cout << "Midi note number " << midiNoteNumber
@@ -41,10 +43,14 @@ void Chord::addNote(int midiNoteNumber)
 		}
 
 	noteList.push_front(note);
+
+	rwLock.exitWrite();
 }
 
 void Chord::removeNote(int midiNoteNumber)
 {
+	rwLock.enterWrite();
+
 	if (midiNoteNumber <= Chord::rootLimit)
 	{
 		cout << "Midi note number " << midiNoteNumber
@@ -61,7 +67,57 @@ void Chord::removeNote(int midiNoteNumber)
 		}
 
 	cout << "Note number " << midiNoteNumber << " does not exist in the chord! Cannot remove it.";
+
+	rwLock.exitWrite();
 }
+
+float Chord::getRootRelP()
+{
+	rwLock.enterRead();
+
+	float rrp = root.interval.getRelP();
+
+	rwLock.exitRead();
+
+	return rrp;
+}
+
+list<float>& Chord::getNotesRelP()
+{
+	rwLock.enterRead();
+
+	float rrp = getRootRelP();
+	list<float> relPList;
+
+	for (auto n = noteList.begin(); n != noteList.end(); ++n)
+	{
+		float nrp = rrp + n->interval.getRelP();
+		relPList.push_back(nrp);
+	}
+
+	rwLock.exitRead();
+
+	return relPList;
+}
+
+void Chord::updateRoot(int r)
+{
+	rwLock.enterWrite();
+
+	if (r > Chord::rootLimit)
+	{
+		cout << "Root number " << r
+			<< " Is too high to be a valid root. Must be MIDI note number 47 (B2) or below." << endl;
+		return;
+	}
+
+	root = Note(r + 24, Interval(1, 1)); // Translate indicated root up two octaves.
+	updateMidiMap();
+
+	rwLock.exitWrite();
+}
+
+//-----------------------------------------------------------------------------
 
 void Chord::updateMidiMap()
 {
@@ -88,18 +144,7 @@ void Chord::updateMidiMap()
 
 }
 
-void Chord::updateRoot(int r)
-{
-	if (r > Chord::rootLimit)
-	{
-		cout << "Root number " << r
-			<< " Is too high to be a valid root. Must be MIDI note number 47 (B2) or below." << endl;
-		return;
-	}
-
-	root = Note(r + 24, Interval(1, 1)); // Translate indicated root up two octaves.
-	updateMidiMap();
-}
+//-----------------------------------------------------------------------------
 
 map<int, Interval> initStandardIntervalMap()
 {

@@ -10,11 +10,12 @@
 
 #include "MidiProcessor.h"
 
-MidiProcessor::MidiProcessor(AudioProcessor& audioProcessor)
+MidiProcessor::MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& pluginEditor)
     : audioProcessor(audioProcessor),
     keyboardComponent(keyboardState, juce::MidiKeyboardComponent::horizontalKeyboard),
     startTime(juce::Time::getMillisecondCounterHiRes() * 0.001)
 {
+    addChangeListener(&audioProcessor);
     addChangeListener(&audioProcessor);
 
     setOpaque(true);
@@ -86,7 +87,12 @@ void MidiProcessor::resized()
     midiMessagesBox.setBounds(area.reduced(10));
 }
 
-    //-------------------------------------------------------------------------
+Chord& MidiProcessor::getActiveChord()
+{
+    return activeChord;
+}
+
+//-------------------------------------------------------------------------
 
 void MidiProcessor::addMessageToList(const juce::MidiMessage& message, const juce::String& source)
 {
@@ -122,10 +128,10 @@ void MidiProcessor::handleNoteOn(juce::MidiKeyboardState*, int midiChannel, int 
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
         postMessageToList(m, "On-Screen Keyboard");
 
-        if (midiNoteNumber > chord.rootLimit)
-            chord.addNote(midiNoteNumber);
+        if (midiNoteNumber > activeChord.rootLimit)
+            activeChord.addNote(midiNoteNumber);
         else
-            chord.updateRoot(midiNoteNumber);
+            activeChord.updateRoot(midiNoteNumber);
 
         sendChangeMessage();
     }
@@ -139,10 +145,10 @@ void MidiProcessor::handleNoteOff(juce::MidiKeyboardState*, int midiChannel, int
         m.setTimeStamp(juce::Time::getMillisecondCounterHiRes() * 0.001);
         postMessageToList(m, "On-Screen Keyboard");
 
-        if (midiNoteNumber > chord.rootLimit)
-            chord.removeNote(midiNoteNumber);
+        if (midiNoteNumber > activeChord.rootLimit)
+            activeChord.removeNote(midiNoteNumber);
         else
-            chord.updateRoot(midiNoteNumber);
+            activeChord.updateRoot(midiNoteNumber);
 
         sendChangeMessage();
     }
