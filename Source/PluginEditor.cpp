@@ -9,23 +9,31 @@
 #pragma once
 
 #include "PluginEditor.h"
+#include "Chord.h"
 
 //==============================================================================
-PrismusAudioProcessorEditor::PrismusAudioProcessorEditor (PrismusAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+PluginEditor::PluginEditor (AudioProcessor& p) : AudioProcessorEditor (&p),
+                                                    audioProcessor (p), 
+                                                    midiProcessor(p),
+                                                    lens(&midiProcessor.chord)
 {
-    //setTopLeftPosition(200, 200);
     setSize(720, 800);
-    addAndMakeVisible(lens);
     addAndMakeVisible(audioComponent);
     addAndMakeVisible(midiProcessor);
+    addAndMakeVisible(lens);
 }
 
-PrismusAudioProcessorEditor::~PrismusAudioProcessorEditor()
+PluginEditor::~PluginEditor()
 {
 }
 
-void PrismusAudioProcessorEditor::resized()
+void PluginEditor::changeListenerCallback(juce::ChangeBroadcaster* source)
+{
+    if (typeid(source) == typeid(MidiProcessor))
+        &midiProcessor.chord;
+}
+
+void PluginEditor::resized()
 {
     auto area = getLocalBounds();
     auto rightArea = area.removeFromRight(480);

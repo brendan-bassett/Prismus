@@ -12,28 +12,32 @@
 
 #include <JuceHeader.h>
 
-#include "PluginProcessor.h"
+#include "AudioProcessor.h"
 #include "Lens.h"
 #include "AudioComponent.h"
 #include "MidiProcessor.h"
 
-//==============================================================================
-/**
-*/
-class PrismusAudioProcessorEditor  : public juce::AudioProcessorEditor
+class PluginEditor  : public juce::AudioProcessorEditor,
+                      public juce::ChangeListener
 {
-public:
-    PrismusAudioProcessorEditor (PrismusAudioProcessor&);
-    ~PrismusAudioProcessorEditor() override;
 
+public:
     //==============================================================================
+
+    PluginEditor (AudioProcessor&);
+    ~PluginEditor() override;
+
     void resized() override;
 
-private:
-    PrismusAudioProcessor& audioProcessor;
-    Lens lens;
-    AudioComponent audioComponent;
-    MidiComponent midiProcessor;
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismusAudioProcessorEditor)
+private:
+    //==============================================================================
+
+    AudioProcessor& audioProcessor;
+    AudioComponent audioComponent;
+    MidiProcessor midiProcessor;
+    Lens lens;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };

@@ -6,21 +6,26 @@
               pluginCharacteristicsValue="pluginWantsMidiIn">
   <MAINGROUP id="TDTzfW" name="Prismus">
     <GROUP id="{364CEA0A-82B8-CE9A-E962-AC2BBD40F93E}" name="Source">
+      <FILE id="FXqBP0" name="MidiProcessor.cpp" compile="1" resource="0"
+            file="Source/MidiProcessor.cpp"/>
+      <FILE id="olrxQm" name="Chord.cpp" compile="1" resource="0" file="Source/Chord.cpp"/>
+      <FILE id="bNBlRB" name="Chord.h" compile="0" resource="0" file="Source/Chord.h"/>
+      <FILE id="CAPOx1" name="Interval.cpp" compile="1" resource="0" file="Source/Interval.cpp"/>
+      <FILE id="wSX51p" name="Interval.h" compile="0" resource="0" file="Source/Interval.h"/>
+      <FILE id="reF7WE" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
+      <FILE id="Qzj8P2" name="Note.h" compile="0" resource="0" file="Source/Note.h"/>
       <FILE id="gPLrFo" name="AudioComponent.h" compile="0" resource="0"
             file="Source/AudioComponent.h"/>
       <FILE id="QnqPW9" name="Lens.cpp" compile="1" resource="0" file="Source/Lens.cpp"/>
       <FILE id="AtuP8W" name="Lens.h" compile="0" resource="0" file="Source/Lens.h"/>
       <FILE id="CWNvuA" name="MidiProcessor.h" compile="0" resource="0" file="Source/MidiProcessor.h"/>
-      <FILE id="VHDdV3" name="NoteStructure.cpp" compile="1" resource="0"
-            file="Source/NoteStructure.cpp"/>
-      <FILE id="GepBRF" name="NoteStructure.h" compile="0" resource="0" file="Source/NoteStructure.h"/>
       <FILE id="DdCd9a" name="PluginEditor.cpp" compile="1" resource="0"
             file="Source/PluginEditor.cpp"/>
       <FILE id="UHsgVt" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
-      <FILE id="WZn8R8" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="jfoGwf" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
+      <FILE id="WZn8R8" name="AudioProcessor.cpp" compile="1" resource="0"
+            file="Source/AudioProcessor.cpp"/>
+      <FILE id="jfoGwf" name="AudioProcessor.h" compile="0" resource="0"
+            file="Source/AudioProcessor.h"/>
     </GROUP>
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>

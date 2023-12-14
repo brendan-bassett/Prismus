@@ -18,15 +18,19 @@ using namespace std;
 //==============================================================================
 /**
 */
-class PrismusAudioProcessor  : public juce::AudioProcessor
-                            #if JucePlugin_Enable_ARA
-                             , public juce::AudioProcessorARAExtension
-                            #endif
+class AudioProcessor  : public juce::AudioProcessor,
+                         public juce::ChangeListener
+                    #if JucePlugin_Enable_ARA
+                       , public juce::AudioProcessorARAExtension
+                    #endif
 {
 public:
     //==============================================================================
-    PrismusAudioProcessor();
-    ~PrismusAudioProcessor() override;
+    AudioProcessor();
+    ~AudioProcessor() override;
+
+    //==============================================================================
+    void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -71,5 +75,5 @@ private:
     list<float* const*> writePointersList;
     list<int> samplesAvailableList;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrismusAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioProcessor)
 };

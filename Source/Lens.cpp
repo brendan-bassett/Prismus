@@ -14,6 +14,7 @@
 #include <string>
 #include <forward_list>
 
+#include "Chord.h"
 #include "Lens.h"
 
 
@@ -21,15 +22,9 @@ using namespace std;
 
 // =====================================================================================================================
 
-Lens::Lens()
+Lens::Lens(Chord* c)
 {
-    // TODO: REMOVE THIS - Populate the chord list with intervals
-
-    chordList.push_front(Interval());
-    chordList.push_front(Interval(5, 4));
-    chordList.push_front(Interval(3, 2));
-    chordList.push_front(Interval(7, 4));
-
+    chord = c;
 }
 
 // =====================================================================================================================
@@ -56,6 +51,7 @@ void Lens::resized()
 
 void Lens::drawChords(juce::Graphics& g)
 {
+
     for (Interval note : chordList)
     {
         float noteAbsRelP = note.getRelP() + rootInterval.getRelP();

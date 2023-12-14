@@ -13,8 +13,9 @@
 #include <iostream>
 #include <forward_list> as list;
 
-#include "PluginProcessor.h"
+#include "AudioProcessor.h"
 #include "PluginEditor.h"
+#include "MidiProcessor.h"
 
 #include <src/common/RingBuffer.h>
 #include "rubberband/RubberBandStretcher.h"
@@ -25,9 +26,9 @@ using RubberBand::RingBuffer;
 using namespace std;
 
 //==============================================================================
-PrismusAudioProcessor::PrismusAudioProcessor()
+AudioProcessor::AudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+     : juce::AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
@@ -39,74 +40,18 @@ PrismusAudioProcessor::PrismusAudioProcessor()
 {
 }
 
-PrismusAudioProcessor::~PrismusAudioProcessor()
+AudioProcessor::~AudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String PrismusAudioProcessor::getName() const
-{
-    return JucePlugin_Name;
-}
 
-bool PrismusAudioProcessor::acceptsMidi() const
-{
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool PrismusAudioProcessor::producesMidi() const
-{
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-bool PrismusAudioProcessor::isMidiEffect() const
-{
-   #if JucePlugin_IsMidiEffect
-    return true;
-   #else
-    return false;
-   #endif
-}
-
-double PrismusAudioProcessor::getTailLengthSeconds() const
-{
-    return 0.0;
-}
-
-int PrismusAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int PrismusAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void PrismusAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const juce::String PrismusAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void PrismusAudioProcessor::changeProgramName (int index, const juce::String& newName)
-{
-}
+void AudioProcessor::changeListenerCallback(juce::ChangeBroadcaster* source)
+{}
 
 //==============================================================================
-void PrismusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+
+void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
 
     DBG("TOTAL NUMBER INPUT CHANNELS: " << getTotalNumInputChannels());
@@ -130,39 +75,13 @@ void PrismusAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBloc
     }
 }
 
-void PrismusAudioProcessor::releaseResources()
+void AudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool PrismusAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
-{
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
-        return false;
-
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
-
-    return true;
-  #endif
-}
-#endif
-
-void PrismusAudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
+void AudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
 {
     /*
     * FROM "Livestream - Implementing a TimeStretching Library (RubberBand)"  by The Audio Programmer
@@ -233,33 +152,123 @@ void PrismusAudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, ju
 }
 
 //==============================================================================
-bool PrismusAudioProcessor::hasEditor() const
+
+#ifndef JucePlugin_PreferredChannelConfigurations
+bool AudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
+{
+#if JucePlugin_IsMidiEffect
+    juce::ignoreUnused(layouts);
+    return true;
+#else
+    // This is the place where you check if the layout is supported.
+    // In this template code we only support mono or stereo.
+    // Some plugin hosts, such as certain GarageBand versions, will only
+    // load plugins that support stereo bus layouts.
+    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        return false;
+
+    // This checks if the input layout matches the output layout
+#if ! JucePlugin_IsSynth
+    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+        return false;
+#endif
+
+    return true;
+#endif
+}
+#endif
+
+bool AudioProcessor::hasEditor() const
 {
     return true;
 }
 
-juce::AudioProcessorEditor* PrismusAudioProcessor::createEditor()
+juce::AudioProcessorEditor* AudioProcessor::createEditor()
 {
-    return new PrismusAudioProcessorEditor (*this);
+    return new PluginEditor (*this);
+}
+
+const juce::String AudioProcessor::getName() const
+{
+    return JucePlugin_Name;
+}
+
+bool AudioProcessor::acceptsMidi() const
+{
+#if JucePlugin_WantsMidiInput
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool AudioProcessor::producesMidi() const
+{
+#if JucePlugin_ProducesMidiOutput
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool AudioProcessor::isMidiEffect() const
+{
+#if JucePlugin_IsMidiEffect
+    return true;
+#else
+    return false;
+#endif
+}
+
+double AudioProcessor::getTailLengthSeconds() const
+{
+    return 0.0;
+}
+
+int AudioProcessor::getNumPrograms()
+{
+    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+    // so this should be at least 1, even if you're not really implementing programs.
+}
+
+int AudioProcessor::getCurrentProgram()
+{
+    return 0;
+}
+
+void AudioProcessor::setCurrentProgram(int index)
+{
+}
+
+const juce::String AudioProcessor::getProgramName(int index)
+{
+    return {};
+}
+
+void AudioProcessor::changeProgramName(int index, const juce::String& newName)
+{
 }
 
 //==============================================================================
-void PrismusAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+
+void AudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
     // as intermediaries to make it easy to save and load complex data.
 }
 
-void PrismusAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void AudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
 }
 
 //==============================================================================
+
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new PrismusAudioProcessor();
+    return new AudioProcessor();
 }
