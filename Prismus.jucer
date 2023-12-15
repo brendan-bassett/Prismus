@@ -3,17 +3,20 @@
 <JUCERPROJECT id="w2F9C0" name="Prismus" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               headerPath="/Users/bbass/Dev/Prismus/rubberband;" defines="JUCE_VST3_CAN_REPLACE_VST2=0;"
-              pluginCharacteristicsValue="pluginWantsMidiIn">
+              pluginCharacteristicsValue="pluginWantsMidiIn" companyName="Brendan Bassett"
+              companyWebsite="www.BrendanBassett.net">
   <MAINGROUP id="TDTzfW" name="Prismus">
     <GROUP id="{364CEA0A-82B8-CE9A-E962-AC2BBD40F93E}" name="Source">
+      <FILE id="domNC2" name="RubberbandNote.cpp" compile="1" resource="0"
+            file="Source/RubberbandNote.cpp"/>
+      <FILE id="BR3jho" name="RubberbandNote.h" compile="0" resource="0"
+            file="Source/RubberbandNote.h"/>
       <FILE id="FXqBP0" name="MidiProcessor.cpp" compile="1" resource="0"
             file="Source/MidiProcessor.cpp"/>
       <FILE id="olrxQm" name="Chord.cpp" compile="1" resource="0" file="Source/Chord.cpp"/>
       <FILE id="bNBlRB" name="Chord.h" compile="0" resource="0" file="Source/Chord.h"/>
       <FILE id="CAPOx1" name="Interval.cpp" compile="1" resource="0" file="Source/Interval.cpp"/>
       <FILE id="wSX51p" name="Interval.h" compile="0" resource="0" file="Source/Interval.h"/>
-      <FILE id="reF7WE" name="Note.cpp" compile="1" resource="0" file="Source/Note.cpp"/>
-      <FILE id="Qzj8P2" name="Note.h" compile="0" resource="0" file="Source/Note.h"/>
       <FILE id="gPLrFo" name="AudioComponent.h" compile="0" resource="0"
             file="Source/AudioComponent.h"/>
       <FILE id="QnqPW9" name="Lens.cpp" compile="1" resource="0" file="Source/Lens.cpp"/>

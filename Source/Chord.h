@@ -15,7 +15,9 @@
 #include <forward_list>
 
 #include "Interval.h"
-#include "Note.h"
+
+using std::forward_list;
+using std::map;
 
 class Chord
 {
@@ -30,12 +32,19 @@ public:
     //-- Instance Functions ---------------------------------------------------
 
     void addNote(int midiNoteNumber);
-    std::forward_list<float> getNotesRelP();
-    std::forward_list<int> getMidiNoteNumbers();
-    std::forward_list<float> getNotesMultipliers();
+
+    forward_list<float> getNotesRelP();
+
+    forward_list<int> getMidiNoteNumbers();
+    
+    forward_list<float> getNotesMultipliers();
+    
     float getRootRelP();
+    
     bool hasNote(int midiNoteNumber);
+    
     void removeNote(int midiNoteNumber);
+    
     void updateRoot(int r);
 
     //-- Static Variables -----------------------------------------------------
@@ -45,14 +54,31 @@ public:
 private:
     //=========================================================================
 
+    //-- Subclasses & Enums ---------------------------------------------------
+
+    struct Note
+    {
+        Note(Interval i, int mnn = 60) : interval(i), midiNoteNumber(mnn)
+        {}
+
+        bool operator == (const Note& n)
+        {
+            return midiNoteNumber == n.midiNoteNumber;
+        }
+
+        Interval interval;
+        int midiNoteNumber;
+    };
+
     //-- Instance Functions ---------------------------------------------------
 
     void updateMidiMap();
 
-    std::map<int, Interval> midiMap;
-    std::forward_list<Note> noteList;
-    Note root;
-    juce::ReadWriteLock rwLock;
+    map<int, Interval> midiMap;
+    forward_list<Note> noteList;
+    Note root{ Interval() };
+
+    const juce::ReadWriteLock rwLock;
 
     //-- Static Variables -----------------------------------------------------
 

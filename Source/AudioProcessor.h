@@ -14,6 +14,12 @@
 
 #include "rubberband/RubberBandStretcher.h"
 #include "MidiProcessor.h"
+#include "RubberbandNote.h"
+
+using std::forward_list;
+
+using juce::String;
+using juce::AudioBuffer;
 
 using RubberBand::RubberBandStretcher;
 
@@ -31,6 +37,7 @@ public:
     //-- Constructors & Destructors -------------------------------------------
 
     AudioProcessor();
+
     ~AudioProcessor() override;
     
 	//-- Instance Functions ---------------------------------------------------
@@ -38,24 +45,39 @@ public:
     void changeListenerCallback(juce::ChangeBroadcaster* source) override
 ;
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+
+    void processBlock (AudioBuffer<float>&, juce::MidiBuffer&) override;
+
     void releaseResources() override;
+
     void updateChord(Chord& chord);
 
     //-------------------------------------------------------------------------
 
     bool acceptsMidi() const override;
+
     void changeProgramName(int index, const juce::String& newName) override;
+
     juce::AudioProcessorEditor* createEditor() override;
+
     int getCurrentProgram() override;
-    const juce::String getName() const override;
+
+    const String getName() const override;
+
     int getNumPrograms() override;
-    const juce::String getProgramName(int index) override;
+
+    const String getProgramName(int index) override;
+
     double getTailLengthSeconds() const override;
+    
     bool hasEditor() const override;
+    
     bool isMidiEffect() const override;
+    
     bool producesMidi() const override;
+    
     void setCurrentProgram(int index) override;
+    
     void setMidiProcessor(MidiProcessor* midiProcessor);
 
     #ifndef JucePlugin_PreferredChannelConfigurations
@@ -66,6 +88,7 @@ public:
     // Save State Functions
 
     void getStateInformation (juce::MemoryBlock& destData) override;
+
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 private:
@@ -75,14 +98,14 @@ private:
 
     MidiProcessor* midiProcessor;
 
-    std::map<int, RubberBandStretcher*> rubberbandMap;
-    std::map<int, juce::AudioBuffer<float>> rbBufferMap;
-    std::forward_list<float* const*> writePointersList;
-    std::forward_list<int> samplesAvailableList;
+    forward_list<RubberbandNote> activeRbNotes;
+    forward_list<RubberbandNote> inactiveRbNotes;
+    forward_list<float* const*> writePointersList;
 
     //-- Static Variables -----------------------------------------------------
 
-    const static int maxPolyphony = 5;
+    const static int maxActiveRubberbands{ 5 };
+    const static int maxInactiveRubberbands{ 2 };
 
     //-------------------------------------------------------------------------
 

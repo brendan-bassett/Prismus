@@ -38,7 +38,7 @@ void Chord::addNote(int midiNoteNumber)
 	}
 
 	Interval interval{ midiMap[midiNoteNumber] };
-	Note note{ midiNoteNumber, interval };
+	Note note{ interval, midiNoteNumber };
 
 	// Ensure the note is not already in the chord before adding it.
 	for (auto n{ noteList.begin() }; n != noteList.end(); ++n)
@@ -157,7 +157,7 @@ void Chord::updateRoot(int r)
 		return;
 	}
 
-	root = Note(r + 24, Interval(1, 1)); // Translate indicated root up two octaves.
+	root = Note(Interval(1, 1), r + 24); // Translate indicated root up two octaves.
 	updateMidiMap();
 
 	rwLock.exitWrite();

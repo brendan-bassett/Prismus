@@ -27,11 +27,13 @@ public:
     //-- Constructors & Destructors -------------------------------------------
 
     PluginEditor (AudioProcessor& audioProcessor);
+
     ~PluginEditor() override;
 
     //-- Instance Functions ---------------------------------------------------
 
     void resized() override;
+
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
 
 private:

@@ -16,12 +16,7 @@
 #include "PluginEditor.h"
 #include "MidiProcessor.h"
 
-#include <src/common/RingBuffer.h>
-#include "rubberband/RubberBandStretcher.h"
-
-using RubberBand::RubberBandStretcher;
-using RubberBand::RingBuffer;
-
+using std::forward_list;
 
 //PUBLIC
 //=============================================================================
@@ -63,86 +58,72 @@ void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     DBG("TOTAL NUMBER INPUT CHANNELS: " << getTotalNumInputChannels());
     DBG("TOTAL NUMBER OUTPUT CHANNELS: " << getTotalNumOutputChannels());
 
-    for (int i{ 0 }; i < maxPolyphony; ++i)
+    for (int i{ 0 }; i < maxInactiveRubberbands; ++i)
     {
         // It is assumed that the lowest notes on the keyboard are reserved for indicating the root of a chord. So we
         // map the unused buffers to these lowest notes.
-        rbBufferMap[i] = juce::AudioBuffer<float>(getTotalNumInputChannels(), samplesPerBlock);
+        AudioBuffer audioBuffer{ juce::AudioBuffer<float>(getTotalNumInputChannels(), samplesPerBlock) };
 
-        rubberbandMap[i] = &RubberBandStretcher(sampleRate,
+        RubberBandStretcher rubberband{ RubberBandStretcher(sampleRate,
             getTotalNumOutputChannels(),
             RubberBandStretcher::PresetOption::DefaultOptions | RubberBandStretcher::Option::OptionProcessRealTime,
             1.0,
-            1.0);
+            1.0) };
+
+        RubberbandNote rubberbandNote{ rubberband, audioBuffer, 1/(float)maxActiveRubberbands};
+        inactiveRbNotes.push_front(rubberbandNote);
     }
 }
 
-void AudioProcessor::processBlock (juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
+void AudioProcessor::processBlock(juce::AudioBuffer<float>& ioBuffer, juce::MidiBuffer& midiMessages)
 {
     int bufferSamples{ ioBuffer.getNumSamples() };
-    auto readPointers{ ioBuffer.getArrayOfReadPointers() };    // Pointers to the input channels
 
-    for (auto it{ rbBufferMap.begin() }; it != rbBufferMap.end(); ++it)
-    {
-        it->second.makeCopyOf(ioBuffer);
-        writePointersList.push_front(it->second.getArrayOfWritePointers());
-    }
-
-    for (auto it{ rubberbandMap.begin() }; it != rubberbandMap.end(); ++it)
-    {
-        RubberBandStretcher* rubberband{ it->second };
-        rubberband->process(readPointers, bufferSamples, false);
-        samplesAvailableList.push_front(rubberband->available());
-    }
+    for (auto it{ activeRbNotes.begin() }; it != activeRbNotes.end(); ++it)
+        it->process(ioBuffer, bufferSamples);
 
     DBG("/n-----------------------------------------------------------------------/n");
+    DBG("Buffer samples needed to proceed: " << bufferSamples << "/n");
 
     bool proceedWithBlock{ true };
-    int i{ 1 };
-    for (auto sa{ samplesAvailableList.begin() }; sa != samplesAvailableList.end(); ++sa)
+    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
     {
-        if (*sa < bufferSamples)
+        int samplesAvailable = rbn->getSamplesAvailable();
+
+        if (samplesAvailable < bufferSamples)
         {
-            DBG("Rubberband " << i << " samples available: " << *sa << "     (NOT ENOUGH SAMPLES AVAILABLE)");
+            DBG("Rubberband " << rbn->getMidiNoteNumber() << " samples available: "
+                << samplesAvailable << "     (NOT ENOUGH SAMPLES AVAILABLE)");
             proceedWithBlock = false;
         }
         else
         {
-            DBG("Rubberband " << i << " samples available: " << *sa);
+            DBG("Rubberband " << rbn->getMidiNoteNumber() << " samples available: " << samplesAvailable);
         }
-
-        ++i;
     }
 
-    if (proceedWithBlock)
-    {
-        DBG("/nRetrieve " << bufferSamples << " samples from each rubberband instance.");
-
-        auto wp{ writePointersList.begin() };
-        for (auto it = rubberbandMap.begin(); it != rubberbandMap.end(); ++it)
-        {
-            RubberBandStretcher* rubberband{ it->second };
-            rubberband->retrieve(*wp, bufferSamples);
-            ++wp;
-        }
-
-        ioBuffer.applyGain(0, 0, bufferSamples, 0.00);
-
-        for (auto it = rbBufferMap.begin(); it != rbBufferMap.end(); ++it)
-        {
-            it->second.addFrom(0, 0, it->second, 0, 0, bufferSamples, 1/(float)maxPolyphony);
-        }
-
-        ioBuffer.applyGain(0, 0, bufferSamples, 2.0);  // TODO implement master gain slider to control this.
-    }
-    else
+    if (!proceedWithBlock)
     {
         DBG("/nNOT ENOUGH SAMPLES AVAILABLE. SKIP THIS BLOCK");
     }
 
-    writePointersList.clear();
-    samplesAvailableList.clear();
+    DBG("/nRetrieve " << bufferSamples << " samples from each rubberband instance.");
+
+    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    {
+        rbn->retrieve(bufferSamples);
+    }
+
+    ioBuffer.applyGain(0, 0, bufferSamples, 0.00); // Clear the buffer
+
+    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    {
+        rbn->output(ioBuffer, bufferSamples);
+    }
+
+    ioBuffer.applyGain(0, 0, bufferSamples, 2.0);  // TODO implement master gain slider to control this.
 }
+
 
 void AudioProcessor::releaseResources()
 {
@@ -152,12 +133,31 @@ void AudioProcessor::releaseResources()
 
 void AudioProcessor::updateChord(Chord& chord)
 {
-    std::forward_list<int> midiNoteNumber { chord.getMidiNoteNumbers() };
-    for (auto it{ rubberbandMap.begin() }; it != rubberbandMap.end(); ++it)
+    forward_list<int> chordNoteNumbers { chord.getMidiNoteNumbers() };
+
+    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
     {
-        // TODO: Separate inactive instances of RubberBand from active ones
-        // TODO: Combine RubberBand instances and their corresponding AudioBuffers and samplesAvailable
+        int rbNoteNumber = rbn->getMidiNoteNumber();
+        for (auto cnn{ chordNoteNumbers.begin() }; cnn != chordNoteNumbers.end(); ++cnn)
+        {
+            if (*cnn == rbNoteNumber)
+            {
+                chordNoteNumbers.remove(rbNoteNumber);
+                break;
+                continue; // TODO: Will this continue to the next active rbNote??
+            }
+        }
+
+        // No match for this active rbNote found in the chord.
+        rbn->noteOff();
     }
+
+    // Any remaining notes in the chord need to be activated.
+    for (auto cnn{ chordNoteNumbers.begin() }; cnn != chordNoteNumbers.end(); ++cnn)
+    {
+        //TODO: Activate new rubberbandNotes for the remaining new members of the chord.
+    }
+    
 }
 
 //-----------------------------------------------------------------------------

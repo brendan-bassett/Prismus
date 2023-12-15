@@ -24,9 +24,12 @@ class MidiProcessor : public juce::Component,
 {
 
 public:
+    //=========================================================================
+
     //-- Constructors & Destructors -------------------------------------------
 
     MidiProcessor(AudioProcessor& audioProcessor, PluginEditor& pluginEditor);
+
     ~MidiProcessor() override;
 
     //-- Instance Variables ---------------------------------------------------
