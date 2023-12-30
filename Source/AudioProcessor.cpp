@@ -58,7 +58,7 @@ void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     DBG("TOTAL NUMBER INPUT CHANNELS: " << getTotalNumInputChannels());
     DBG("TOTAL NUMBER OUTPUT CHANNELS: " << getTotalNumOutputChannels());
 
-    for (int i{ 0 }; i < maxInactiveRubberbands; ++i)
+    for (int i{ 0 }; i < maxRubberbandNotes; ++i)
     {
         // It is assumed that the lowest notes on the keyboard are reserved for indicating the root of a chord. So we
         // map the unused buffers to these lowest notes.
@@ -70,8 +70,8 @@ void AudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
             1.0,
             1.0) };
 
-        RubberbandNote rubberbandNote{ rubberband, audioBuffer, 1/(float)maxActiveRubberbands};
-        inactiveRbNotes.push_front(rubberbandNote);
+        RubberbandNote rubberbandNote{ rubberband, audioBuffer, 1/(float)maxRubberbandNotes };
+        rubberbandNotes.push_front(rubberbandNote);
     }
 }
 
@@ -79,15 +79,18 @@ void AudioProcessor::processBlock(juce::AudioBuffer<float>& ioBuffer, juce::Midi
 {
     int bufferSamples{ ioBuffer.getNumSamples() };
 
-    for (auto it{ activeRbNotes.begin() }; it != activeRbNotes.end(); ++it)
+    for (auto it{ rubberbandNotes.begin() }; it != rubberbandNotes.end(); ++it)
         it->process(ioBuffer, bufferSamples);
 
     DBG("/n-----------------------------------------------------------------------/n");
     DBG("Buffer samples needed to proceed: " << bufferSamples << "/n");
 
     bool proceedWithBlock{ true };
-    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    for (auto rbn{ rubberbandNotes.begin() }; rbn != rubberbandNotes.end(); ++rbn)
     {
+        if (!rbn->isActive())
+            continue;
+
         int samplesAvailable = rbn->getSamplesAvailable();
 
         if (samplesAvailable < bufferSamples)
@@ -109,15 +112,21 @@ void AudioProcessor::processBlock(juce::AudioBuffer<float>& ioBuffer, juce::Midi
 
     DBG("/nRetrieve " << bufferSamples << " samples from each rubberband instance.");
 
-    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    for (auto rbn{ rubberbandNotes.begin() }; rbn != rubberbandNotes.end(); ++rbn)
     {
+        if (!rbn->isActive())
+            continue;
+
         rbn->retrieve(bufferSamples);
     }
 
     ioBuffer.applyGain(0, 0, bufferSamples, 0.00); // Clear the buffer
 
-    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    for (auto rbn{ rubberbandNotes.begin() }; rbn != rubberbandNotes.end(); ++rbn)
     {
+        if (!rbn->isActive())
+            continue;
+
         rbn->output(ioBuffer, bufferSamples);
     }
 
@@ -135,27 +144,49 @@ void AudioProcessor::updateChord(Chord& chord)
 {
     forward_list<int> chordNoteNumbers { chord.getMidiNoteNumbers() };
 
-    for (auto rbn{ activeRbNotes.begin() }; rbn != activeRbNotes.end(); ++rbn)
+    // Match active rubberbandNotes with existing notes in the chord.
+    for (auto rbn{ rubberbandNotes.begin() }; rbn != rubberbandNotes.end(); ++rbn)
     {
+        if (!rbn->isActive())
+            continue;
+
+        bool matchFound = false;
         int rbNoteNumber = rbn->getMidiNoteNumber();
+
         for (auto cnn{ chordNoteNumbers.begin() }; cnn != chordNoteNumbers.end(); ++cnn)
         {
             if (*cnn == rbNoteNumber)
             {
+                matchFound = true;
                 chordNoteNumbers.remove(rbNoteNumber);
                 break;
-                continue; // TODO: Will this continue to the next active rbNote??
             }
         }
 
-        // No match for this active rbNote found in the chord.
-        rbn->noteOff();
+        if (!matchFound)
+        {
+            // No match for this active rbNote found in the chord. Deactivate the rbNote.
+            rbn->noteOff();
+        }
     }
 
-    // Any remaining notes in the chord need to be activated.
+    // Any remaining note in the chord need to be paired with an inactive rubberbandNote and activated.
     for (auto cnn{ chordNoteNumbers.begin() }; cnn != chordNoteNumbers.end(); ++cnn)
     {
-        //TODO: Activate new rubberbandNotes for the remaining new members of the chord.
+        bool matchFound = false;
+        for (auto rbn{ rubberbandNotes.begin() }; rbn != rubberbandNotes.end(); ++rbn)
+        {
+            if (rbn->isActive())
+                continue;
+
+            rbn->noteOn(*cnn);
+            matchFound = true;
+            break;
+        }
+
+        if (!matchFound)
+            DBG("Max number of notes reached. No inactive rubberbandNote exists" 
+                << "to pair with midi note number : " << *cnn);
     }
     
 }

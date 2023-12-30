@@ -4,7 +4,8 @@
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               headerPath="/Users/bbass/Dev/Prismus/rubberband;" defines="JUCE_VST3_CAN_REPLACE_VST2=0;"
               pluginCharacteristicsValue="pluginWantsMidiIn" companyName="Brendan Bassett"
-              companyWebsite="www.BrendanBassett.net">
+              companyWebsite="www.BrendanBassett.net" version="0.0.1" cppLanguageStandard="20"
+              pluginFormats="buildVST3">
   <MAINGROUP id="TDTzfW" name="Prismus">
     <GROUP id="{364CEA0A-82B8-CE9A-E962-AC2BBD40F93E}" name="Source">
       <FILE id="domNC2" name="RubberbandNote.cpp" compile="1" resource="0"

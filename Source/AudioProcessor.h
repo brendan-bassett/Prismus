@@ -98,14 +98,12 @@ private:
 
     MidiProcessor* midiProcessor;
 
-    forward_list<RubberbandNote> activeRbNotes;
-    forward_list<RubberbandNote> inactiveRbNotes;
+    forward_list<RubberbandNote> rubberbandNotes;
     forward_list<float* const*> writePointersList;
 
     //-- Static Variables -----------------------------------------------------
 
-    const static int maxActiveRubberbands{ 5 };
-    const static int maxInactiveRubberbands{ 2 };
+    const static int maxRubberbandNotes{ 5 };
 
     //-------------------------------------------------------------------------
 
